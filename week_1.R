@@ -95,14 +95,36 @@ ggplot(data = data_set) +
   geom_histogram(binwidth = 2.5)
 
 # Combining geoms
-ggplot(data = data_set) + 
+regression_plot = ggplot(data = data_set) + 
   aes(x = SVL, y = Tail) + 
-  geom_point(size = 2.5, shape = 1) + 
+  geom_point(size = 2.5, shape = 1, alpha = .5) + 
   geom_smooth(method = "lm") # adds regression line
- 
-# Facets
+regression_plot 
 
-# bar plots
+# Facets
+# Facets are a way to create several smaller plots out of one dataset
+
+regression_plot + facet_wrap(~Color) # This splits the colors into separate plots
+
+regression_plot + facet_wrap(~Site) # Note that by default, the scales are fixed to be the same
+regression_plot + facet_wrap(~Site, scales = "free_x")
+
+# Bar graphs involve a statistical transformation of the data
+
+# How many individuals were at each site?
+ggplot(data = data_set) + 
+  aes(x = Site) +
+  geom_bar()
+
+ggplot(data = data_set) + 
+  aes(x = Site, fill = Color) +
+  geom_bar()
+
+ggplot(data = data_set) + 
+  aes(x = Site, fill = Color) +
+  geom_bar(position = "dodge")
+
+
 
 # Cheat sheet
 # Go to https://ggplot2.tidyverse.org/ for the help files
