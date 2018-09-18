@@ -17,21 +17,22 @@ install.packages("cowplot") # Install this package too
 # latest versions.  If not, then please run the above code to
 # update them
 
-
-#### Read some data ####
 library(tidyverse)
-data_set <- read_csv("data/week_1.csv") # This loads in the dataset
 
-data_set # This is a tidy data frame;
+#### let's take a look at some data ####
+
+lizards <- read_csv("data/week_1.csv") # This loads in the dataset
+
+lizards # This is a tidy data frame;
 # Each column is a separate variable; each row is an observation
-glimpse(data_set)
-View(data_set)
+glimpse(lizards)
+View(lizards)
 
 ## Data visualization
 
 base_plot <- 
-  ggplot(data = data_set) + # sets up a plot around data_set
-  aes(x = SVL, y = Tail) + # Connects columns of data_set to plot aesthetics
+  ggplot(data = lizards) + # sets up a plot around lizards
+  aes(x = SVL, y = Tail) + # Connects columns of lizards to plot aesthetics
   geom_point() # defines a visual layer; in this case, points
 base_plot # show results
 
@@ -55,19 +56,19 @@ base_plot + aes(shape = Color)
 base_plot + aes(shape = Color) + scale_shape(solid = FALSE)
 
 # Size
-ggplot(data = data_set) + 
+ggplot(data = lizards) + 
   aes(x = SVL, y = Tail, size = Limb) + 
   geom_point(color = "cornflowerblue", shape = 1)
 
 
 # You can also give points fixed aesthetic values
-ggplot(data = data_set) + 
+ggplot(data = lizards) + 
   aes(x = SVL, y = Tail, shape = Color) + 
   geom_point(size = 2.5, color = "cornflowerblue") + 
   scale_shape(solid = FALSE)
 
 # Or double up on Aesthetics
-ggplot(data = data_set) + 
+ggplot(data = lizards) + 
   aes(x = SVL, y = Tail, shape = Color, color = Color) + 
   geom_point(size = 2.5) + 
   scale_shape(solid = FALSE)
@@ -76,30 +77,70 @@ base_plot + aes(color = Limb, shape = Color) +
   scale_shape(solid = FALSE) +
   scale_color_viridis_c()
   
-# Geoms 
+# Geoms are different ways to visualize data
+# 
+
+## Discrete X ##
+# Histograms
+ggplot(data = lizards) + 
+  aes(x = Diameter) + 
+  geom_histogram()
+# Note that there's a warning there; in this case
+
+ggplot(data = lizards) + 
+  aes(x = Diameter) + 
+  geom_histogram(binwidth = 2.5) # binwidths option fixes the warning
+
+# Density Plots
+ggplot(data = lizards) + 
+  aes(x = Diameter) + 
+  geom_density()
+
+# Exercise: How could you use a density plot or histogram to compare Diameter distribution of different lizard Color morphs?
+
+# Discrete X, continuous Y
 
 # boxplots
-box_plots <- ggplot(data = data_set) + 
+box_plots <- ggplot(data = lizards) + 
   aes(x = Site, y = Height) + 
   geom_boxplot() 
 
-box_plots + aes(fill = Color)
+box_plots + aes(fill = Color) # Note that we're using fill as the aesthetic, not color
+# Generally, fill is used to color solid objects, color is used for lines or points
 
-# Histograms
-ggplot(data = data_set) + 
-  aes(x = Diameter) + 
-  geom_histogram()
+# Violin plot
+ggplot(data = lizards) + 
+  aes(x = Site, y = Height) + 
+  geom_violin()  
 
-ggplot(data = data_set) + 
-  aes(x = Diameter) + 
-  geom_histogram(binwidth = 2.5)
+# Jitter plot
+ggplot(data = lizards) + 
+  aes(x = Site, y = Height) + 
+  geom_jitter(height = 0, width = .3)  # height and width control how much they can jiter
+
+# Continuous X and Y
+
+# Line graph
+ggplot(data = lizards) + 
+  aes(x = SVL, y = Tail) + 
+  geom_line()
+ggplot(data = lizards) + 
+  aes(x = SVL, y = Tail, color = Color) + 
+  geom_line()
+
+# Regression line, with errors
+ggplot(data = lizards) + 
+  aes(x = SVL, y = Tail) + 
+  geom_smooth(method = "lm", se = TRUE) # use se = FALSE to disable error regions
 
 # Combining geoms
-regression_plot = ggplot(data = data_set) + 
+regression_plot = ggplot(data = lizards) + 
   aes(x = SVL, y = Tail) + 
   geom_point(size = 2.5, shape = 1, alpha = .5) + 
   geom_smooth(method = "lm") # adds regression line
 regression_plot 
+
+# Exercise: explore the lizards dataset to see if there are any apparent relationships between different variables
 
 # Facets
 # Facets are a way to create several smaller plots out of one dataset
@@ -109,24 +150,25 @@ regression_plot + facet_wrap(~Color) # This splits the colors into separate plot
 regression_plot + facet_wrap(~Site) # Note that by default, the scales are fixed to be the same
 regression_plot + facet_wrap(~Site, scales = "free_x")
 
+# Two_way faceting
 regression_plot + facet_grid(Color~Perch_type)
 
 # Bar graphs involve a statistical transformation of the data
 
 # How many individuals were at each site?
-ggplot(data = data_set) + 
+ggplot(data = lizards) + 
   aes(x = Site) +
   geom_bar()
 
-ggplot(data = data_set) + 
+ggplot(data = lizards) + 
   aes(x = Site, fill = Perch_type) +
   geom_bar()
 
-ggplot(data = data_set) + 
+ggplot(data = lizards) + 
   aes(x = Site, fill = Perch_type) +
   geom_bar(position = "dodge")
 
-ggplot(data = data_set) + 
+ggplot(data = lizards) + 
   aes(x = Site, fill = Perch_type) +
   geom_bar() + facet_wrap(~Color)
 
