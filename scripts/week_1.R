@@ -134,7 +134,7 @@ ggplot(data = lizards) +
   geom_smooth(method = "lm", se = TRUE) # use se = FALSE to disable error regions
 
 # Combining geoms
-regression_plot = ggplot(data = lizards) + 
+regression_plot <- ggplot(data = lizards) + 
   aes(x = SVL, y = Tail) + 
   geom_point(size = 2.5, shape = 1, alpha = .5) + 
   geom_smooth(method = "lm") # adds regression line
