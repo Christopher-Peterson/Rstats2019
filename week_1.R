@@ -109,6 +109,8 @@ regression_plot + facet_wrap(~Color) # This splits the colors into separate plot
 regression_plot + facet_wrap(~Site) # Note that by default, the scales are fixed to be the same
 regression_plot + facet_wrap(~Site, scales = "free_x")
 
+regression_plot + facet_grid(Color~Perch_type)
+
 # Bar graphs involve a statistical transformation of the data
 
 # How many individuals were at each site?
@@ -117,14 +119,16 @@ ggplot(data = data_set) +
   geom_bar()
 
 ggplot(data = data_set) + 
-  aes(x = Site, fill = Color) +
+  aes(x = Site, fill = Perch_type) +
   geom_bar()
 
 ggplot(data = data_set) + 
-  aes(x = Site, fill = Color) +
+  aes(x = Site, fill = Perch_type) +
   geom_bar(position = "dodge")
 
-
+ggplot(data = data_set) + 
+  aes(x = Site, fill = Perch_type) +
+  geom_bar() + facet_wrap(~Color)
 
 # Cheat sheet
 # Go to https://ggplot2.tidyverse.org/ for the help files
