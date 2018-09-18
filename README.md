@@ -13,7 +13,7 @@ Once R is setup, please install the latest version of the tidyverse (`install.pa
 
 Course materials are being managed by [Git](https://git-scm.com/) and [hosted on Github](https://github.com/Christopher-Peterson/Rstats2018).  You can either download the files directly (click the "Clone or download" button in the repository, then "Download ZIP"), or through RStudio (the recommended option).  You'll need to have Git installed and configured for use with RStudio [(instructions)](https://support.rstudio.com/hc/en-us/articles/200532077-Version-Control-with-Git-and-SVN).  Once you do that, follow the instructions on that page for creating a new project from a remote repository.  
 
-# Texbook
+# Textbook
 
 For the first part of the class, we will be following along with [R for Data Science](http://r4ds.had.co.nz/index.html), a free online textbook.  This book will provide additional examples and cover some areas in more depth than we can get to in person.
 
