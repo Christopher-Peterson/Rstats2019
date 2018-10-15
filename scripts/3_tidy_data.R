@@ -157,28 +157,3 @@ anole_data # This adds new columns to anole corresponding to the site's temp., p
 # Let's save our cleaned and joined data.
 write_csv(anole_data, "data/clean_anole_data.csv")
 
-
-
-
-
-##### Advanced Data Cleaning Exercise:
-
-# Clean the following dataset
-cancer_dat = read_csv("data/cancer_data.csv")
-# Notes: The GID, YORF, and GWEIGHT columns are not necessary
-
-# The Name column needs to be split into the following columns
-# "gene_name", "bio_process", "mol_function", "systematic_id", and "extra"
-# The separator for it is "---"
-# You can get rid of the extra column once it's been made
-# You will probalby want to remove the extra spaces around these new variables
-# the function trimws() can do this; use it on each of the newly created columns
-# (Hint: You can use individual mutate() commands, or try mutate_at())
-
-# The reamining columns (G0.05 through U0.3) should be gathered into a column called "treatment", with a value called "expression"
-# The new treatment column actually represents two values:
-  # A nutrient that was added and the rate at which it was added
-  # The nutrient is the first letter of the treatment name
-  # For your separate command, use sep = 1 to split it off.
-
-# Finally, remove anything with no expression data or a missing systematic id

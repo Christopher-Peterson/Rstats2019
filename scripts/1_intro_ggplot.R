@@ -21,7 +21,7 @@ library(tidyverse)
 
 #### let's take a look at some data ####
 
-lizards <- read_csv("data/week_1.csv") # This loads in the dataset
+lizards <- read_csv("data/anoles.csv") # This loads in the dataset
 
 lizards # This is a tidy data frame;
 # Each column is a separate variable; each row is an observation

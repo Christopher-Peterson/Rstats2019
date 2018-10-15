@@ -6,7 +6,7 @@
 library(tidyverse)
 library(cowplot)
 
-lizards <- read_csv("data/week_1.csv")
+lizards <- read_csv("data/anoles.csv")
 tidy_quakes <- as_tibble(quakes) # A dataset of earthquakes near Fiji
 
 #### mutate(): add a new column to a data frame ####
