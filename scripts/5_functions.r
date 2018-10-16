@@ -6,6 +6,10 @@ lizards = read_csv("data/anoles.csv")
 
 mean(1:5) # The mean function takes the arguments c(1,2,3,4,5) and returns a single value, the mean
 
+# You can apply this function to a column in your data frame. If you wanted to find the mean diameter of the
+# lizards in your date, you would do:
+mean(lizards$Diameter)
+
 # You can write your own functions.
 # Functions let you avoid errors from copy/paste duplications
 # If you need to change something, you only need to modify the code in one location, which reduces errors
@@ -42,7 +46,8 @@ lizards %>% group_by(Site) %>% # This bit of code is much more readable
 
 
 # Exercise:
-# write a function that 
+# Write a function that calculates the total size of each lizard. Let's define size as the sum of the
+# diameter and height of the lizard. This obviously makes no sense biologically.
 
 
 
