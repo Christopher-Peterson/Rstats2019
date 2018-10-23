@@ -31,6 +31,8 @@ normalize = function(x, ...) { # We have one argument (x) and dots (...)
 }
 normalize(1:5)
 
+
+
 # What do dots do? They add flexibility.  For example: 
 missing_vector = c(1:5, NA) # This has a missing value in it
 mean(missing_vector) # NA's can cause problems in a lot of functions.
@@ -81,42 +83,13 @@ normalize_general =
     out = x - mean_val
   }
   out # return the output variable
-}
+  }
 
 normalize_general(missing_vector) # no argument defaults to method == "sd"
 normalize_general(missing_vector)== normalize3(missing_vector) # same result
 normalize_general(missing_vector, method = "mean") # Goes with the other option
 normalize_general(missing_vector, method = "m") # match.arg() finds the best match for incomplete options
 normalize_general(missing_vector, method = "center")
-
-# A different way to pass arguments to functions
-extra_args = list(method = "mean", na.rm = FALSE)
-extra_args
-normalize_general(x = 1:5, !!!extra_args) 
-# Placing !!! before a list will splice the elements of that list into the function call as extra arguments
-normalize_general(x = 1:5, !!!extra_args)  ==  normalize_general(x = 1:5, method = "mean", na.rm = FALSE)
-
-# This is incredibly useful when you're passing arguments to specific functions;
-  # it allows a lot more flexibility than dots
-
-normalize_general_splice = 
-  function(x, method = c("sd", "mean", "center"), 
-           mean_args = list(), sd_args = list()) {
-    method = match.arg(method) 
-    mean_val = mean(x, !!!mean_args) # argument splicing
-    if(method == "sd") { 
-      stdev = sd(x, !!!sd_args) # argument splicing
-      out = (x - mean_val) / stdev
-    } else if (method == "mean") { 
-      out = x / mean_val
-    } else if (method == "center") { # The only other option is method == "center"
-      out = x - mean_val
-    }
-    out 
-  }
-normalize_general_splice(missing_vector, method = "sd", 
-                         mean_args = list(na.rm = TRUE, trim = 0.05),
-                         se_args = list(na.rm = FALSE))
 
 #### Advice on function writing #####
 
@@ -206,5 +179,21 @@ lizards %>%
 # How could you make this into a function that could plot arbitrary sites?
 # Modify this function to allow for optional arguments to 
   # geom_point and geom_smooth
+
+filter(lizards, Site=='A')
+
+plot_site <- function(.data, site='A', option_1 = 1){
+  filter(lizards, Site == site) %>%
+  ggplot(aes(x = Limb, y = Height)) +
+  facet_wrap(~Site, scale = "free")+
+  geom_smooth(method = "lm") + geom_point()
+}
+plot_site(site='C')
+sites = unique(lizards$Site)
+sites
+
+plotList <- map2(data_list, sites, plot_site, )
+
+
 
 
