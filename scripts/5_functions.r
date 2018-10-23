@@ -188,11 +188,6 @@ plot_site <- function(.data, site='A', option_1 = 1){
   facet_wrap(~Site, scale = "free")+
   geom_smooth(method = "lm") + geom_point()
 }
-plot_site(site='C')
-sites = unique(lizards$Site)
-sites
-
-plotList <- map2(data_list, sites, plot_site, )
 
 
 
