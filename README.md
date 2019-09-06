@@ -5,8 +5,6 @@ The class will meet on Thursdays from 2-3 pm in PAT (Room TBD).
 
 # Schedule
 
-- **09/12**: 
-- **09/19**: 
 - **09/26**: General Introduction and Basic Data Visualization with ggplot2
 - **10/03**: Data Manipulation with dplyr
 - **10/10**: Tidying and reshaping data with t  idyr
