@@ -1,7 +1,7 @@
 # Rstats Peer-led Seminar, Fall 2019
 This is the repository for the peer-led R seminar, hosted by UT-Austin's [Center for Computational Biology and Bioinformatics](http://ccbb.biosci.utexas.edu/).  The goal for this class is to provide practical data science programmatic experience using R and RStudio. 
 
-The class will meet on Thursdays from 2-3 pm in PAT (Room TBD). 
+The class will meet on Thursdays from 2-3 pm in PAT 617.
 
 # Schedule
 
