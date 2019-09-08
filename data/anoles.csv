@@ -1,4 +1,4 @@
-Site,Color,Limb,Mass,Diameter,Height,SVL,Tail,Perch_type
+Site,Color_morph,Limb,Mass,Diameter,Height,SVL,Tail,Perch_type
 A,Green,14.3,6.46,8,164,61.8,43.9,Other
 A,Brown,12.3,5.82,18,151,57.1,42.2,Tree
 A,Blue,10.5,4.29,36,130,49.1,25,Building

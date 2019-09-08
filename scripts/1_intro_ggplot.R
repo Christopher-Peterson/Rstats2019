@@ -47,9 +47,9 @@ base_plot
 # Aesthetics connect a column of data to a visual representation on the plot
 # for example, x and y are aesthetics that correspond to axis positions
 
-# Color is another commonly used aesthetic
+# Color_morph is another commonly used aesthetic
 
-base_plot + aes(color = Color) # discrete color
+base_plot + aes(color = Color_morph) # discrete color
 
 base_plot + aes(color = Limb) # continuous color
 
@@ -57,8 +57,8 @@ base_plot + aes(color = Limb) # continuous color
 base_plot + aes(color = Limb) + scale_color_viridis_c()
 
   # Shape
-base_plot + aes(shape = Color)
-base_plot + aes(shape = Color) + scale_shape(solid = FALSE)
+base_plot + aes(shape = Color_morph)
+base_plot + aes(shape = Color_morph) + scale_shape(solid = FALSE)
 
 # Size
 ggplot(data = lizards, aes(x = SVL, y = Tail, size = Limb)) + 
@@ -68,17 +68,17 @@ ggplot(data = lizards, aes(x = SVL, y = Tail, size = Limb)) +
 
 # You can also give points fixed aesthetic values
 ggplot(data = lizards) + 
-  aes(x = SVL, y = Tail, shape = Color) + 
+  aes(x = SVL, y = Tail, shape = Color_morph) + 
   geom_point(size = 2.5, color = "cornflowerblue") + 
   scale_shape(solid = FALSE)
 
 # Or double up on Aesthetics
 ggplot(data = lizards) + 
-  aes(x = SVL, y = Tail, shape = Color, color = Color) + 
+  aes(x = SVL, y = Tail, shape = Color_morph, color = Color_morph) + 
   geom_point(size = 2.5) + 
   scale_shape(solid = FALSE)
 
-base_plot + aes(color = Limb, shape = Color) + 
+base_plot + aes(color = Limb, shape = Color_morph) + 
   scale_shape(solid = FALSE) +
   scale_color_viridis_c()
   
@@ -102,7 +102,7 @@ ggplot(data = lizards) +
   geom_density()
 
 # Exercise: How could you use a density plot or histogram to compare
-  # Diameter distribution of different lizard Color morphs?
+  # Diameter distribution of different lizard Color_morph morphs?
 
 # Discrete X, continuous Y
 
@@ -111,7 +111,7 @@ box_plots <- ggplot(data = lizards) +
   aes(x = Site, y = Height) + 
   geom_boxplot() 
 
-box_plots + aes(fill = Color) # Note that we're using fill as the aesthetic, not color
+box_plots + aes(fill = Color_morph) # Note that we're using fill as the aesthetic, not color
 # Generally, fill is used to color solid objects, color is used for lines or points
 
 # Violin plot
@@ -132,7 +132,7 @@ ggplot(data = lizards) +
   aes(x = SVL, y = Tail) + 
   geom_line()
 ggplot(data = lizards) + 
-  aes(x = SVL, y = Tail, color = Color) + 
+  aes(x = SVL, y = Tail, color = Color_morph) + 
   geom_line()
 # SO these are clearly not a good way to visualize this sort of data...
 
@@ -143,7 +143,7 @@ ggplot(data = lizards) +
   geom_smooth(method = "lm", se = TRUE) # use se = FALSE to disable error regions
 
 ggplot(data = lizards) + 
-  aes(x = SVL, y = Tail, color = Color) + 
+  aes(x = SVL, y = Tail, color = Color_morph) + 
   geom_smooth(method = "lm", se = TRUE) # use se = FALSE to disable error regions
 
 # Combining geoms
@@ -170,7 +170,7 @@ ggplot(data = lizards) +
 
 ggplot(data = lizards) + 
   aes(x = Site, fill = Perch_type) +
-  geom_bar() + facet_wrap(~Color)
+  geom_bar() + facet_wrap(~Color_morph)
 
 # re-ordering bar graphs
   # You can use fct_infreq() on the x aesthetic to re-order it by frequency 
@@ -188,13 +188,13 @@ bars_in_order + xlab("Site")
 #### Facets ####
 # Facets are a way to create several smaller plots out of one dataset
 
-regression_plot + facet_wrap(~Color) # This splits the colors into separate plots
+regression_plot + facet_wrap(~Color_morph) # This splits the colors into separate plots
 
 regression_plot + facet_wrap(~Site) # Note that by default, the scales are fixed to be the same
 regression_plot + facet_wrap(~Site, scales = "free_x")
 
 # Two_way faceting
-regression_plot + facet_grid(Color~Perch_type)
+regression_plot + facet_grid(Color_morph~Perch_type)
 
 # Cheat sheet
 # Go to https://ggplot2.tidyverse.org/ for the help files

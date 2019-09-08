@@ -1,4 +1,4 @@
-Anole ID,Site,Color,Limb Length (mm),Mass (g),Perch Diameter (cm),Perch Height (cm),Snout-Vent Length (mm),Tail Length (mm)
+Anole ID,Site,Color_morph,Limb Length (mm),Mass (g),Perch Diameter (cm),Perch Height (cm),Snout-Vent Length (mm),Tail Length (mm)
 1,A,Green,14.3,6.46,8.0,164.0,61.8,43.9
 2,A,Brown,NA,6.83,27.0,139.0,54.3,67.3
 3,A,Brown,12.3,5.82,18.0,151.0,57.1,42.2
