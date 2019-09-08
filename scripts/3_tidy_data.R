@@ -2,8 +2,9 @@
 library(tidyverse)
 library(cowplot)
 library(readxl)
-
-## New data set: 
+theme_set(theme_cowplot())
+lizards = read_csv("data/anoles.csv")
+## New data set: ####
 succession_data = read_csv("data/wide_succession_data.csv")
 glimpse(succession_data)
 View(succession_data)
@@ -24,29 +25,57 @@ View(succession_data)
 
 # First, we should convert all of the presence/absense species 
   # columns into a single column
+  
+#### pivot_longer ####
+
 # This is done with the gather() command
-gathered_succ = succession_data %>% 
-  gather(key = "Species", # Name of the column that stores the old column names
-         value = "is_present", # Name of the oclumn that stores old cell values
-         -Type, -Team, -Sample,  # Here, you put the columns that you want to gather
-         -Quadrant, -Distance, -DBH) # this works just like select()
-         # In this case, it's easier to list the columns we DON'T want to gather
-# Equivalently:
 succession_data %>% 
-  gather(key = "Species", value = "is_present", 7:22) # Column numbers also work
-View(gathered_succ) # Note the Species and is_present column
+  pivot_longer(
+    # The column names you want to reshape
+    # In this case, as with dplyr::select, the minus indicates everything BUT 
+    # these columns
+    cols = -c(Type, Team, Sample, Quadrant, Distance, DBH),
+    names_to = "Species", # Name of the column that stores the old column names
+    values_to = "is_present") %>%  # Name of the oclumn that stores old cell values
+  View
+
+# Equivalently:
+succession_data %>% pivot_longer(
+    7:22, # positions of the columns to pivot
+    names_to = "Species", values_to = "is_present")
+succession_data %>% pivot_longer(
+  # You can use ranges of column names, though that's not practical here
+    `Acer negundo (Boxwood elder)`:`Ulmus crassifolia (Cedar elm)`,
+    names_to = "Species", values_to = "is_present")
+succession_data %>% pivot_longer(
+  contains("("), # All of the species names have a parentheses in them
+  names_to = "Species", values_to = "is_present")
+
+
+# Note that there are a lot of NAs in the is_present column,
+  # we can drop these with:
+gathered_succ = succession_data %>% 
+  pivot_longer(7:22, names_to = "Species",
+               values_to = "is_present", 
+               values_drop_na = TRUE)
+
+
+
 
 # All the is_present column is telling us is whether that particular species was 
 # there or not; we don't need the absences, so we can get rid of them
-gathered_succ %>% filter(!is.na(is_present)) %>% select(-is_present)
+gathered_succ %>%  select(-is_present)
+
+#### Separate ####
+
 # To do anything interesting with this, we should be able to separately 
 # work with habitat type and canopy type
 
 # the separate() command works for that
 
-gathered_succ %>% filter(!is.na(is_present)) %>% select(-is_present) %>% 
-  separate(Type, # Column to separate
-           c("Habitat", "Canopy"), # Names of the new columns to separate into
+gathered_succ %>%  select(-is_present) %>% 
+  separate(col = Type, # Column to separate
+           into = c("Habitat", "Canopy"), # Names of the new columns to separate into
            sep = "-") # the character used to mark the separation
 
 # If we want to be able to identify individual sample points, we should make a new column
@@ -54,6 +83,7 @@ gathered_succ %>% filter(!is.na(is_present)) %>% select(-is_present) %>%
 tidy_succession =  gathered_succ %>% 
   filter(!is.na(is_present)) %>% select(-is_present) %>% 
   separate(Type, c("Habitat", "Canopy"), sep = "-")  %>% 
+  # Combine the indicator
   mutate(Sample_point = paste(Habitat, Team, Sample, sep = "-")) %>% 
   select(-Team, -Sample, -Quadrant)
 
@@ -71,6 +101,37 @@ tidy_succession %>% group_by(Habitat, Canopy, Species) %>%
   geom_col(position = position_dodge()) # Column chart; try re-running w/o position argument
 
 
+#### TODO: ####
+  ## pivot_longer() with multiple names or values columns
+  ## Find some examples to use the more complicated pivot function examples
+  ## pivot_wider()
+  ## Maybe also use extract(), though that could require some regex bits?
+
+
+# Get the mean and standard deviation of each numeric trait per site,
+# excluding missing values
+lizards_smry = lizards %>% group_by(Site) %>% 
+  summarize_if(is.numeric, #fonly apply to numeric columns
+               .funs = list(Mean=mean, StDev=sd), # Apply these functions, with the corresponding names
+               na.rm = TRUE )
+lizards_smry
+# Let's tidy this
+# The output should have columns Site, Trait, Mean, and StDev
+lizards_smry %>% 
+  pivot_longer(-Site,
+               names_to = c("Trait", ".value"),
+               names_sep = "_")
+# Note the ".value" in the names
+# we didn't use a values_to argument
+# because the name of the value column
+# changes based on the input column
+
+
+
+
+
+#### Data Cleaning ####
+### I think this stuff below belongs in the following EDA lecture
 ### A look back at the lizard data
 
 # This is more or less the same lizard data, but in a less processed state
@@ -157,3 +218,4 @@ anole_data # This adds new columns to anole corresponding to the site's temp., p
 # Let's save our cleaned and joined data.
 write_csv(anole_data, "data/clean_anole_data.csv")
 
+### Throw in some list columns !!!!
