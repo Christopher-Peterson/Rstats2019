@@ -12,7 +12,7 @@ install.packages("tidyverse") # It may be Cmd+Enter for Mac users
 # If you're asked to pick a server/mirror, go with the first option
 # (O-cloud)
 install.packages("cowplot") # Install this package too
-# install.packages("ggforce")
+install.packages("ggforce")
 
 # If you already have these installed, make sure they're the 
 # latest versions.  If not, then please run the above code to
@@ -20,7 +20,7 @@ install.packages("cowplot") # Install this package too
 
 library(tidyverse)
 library(cowplot)
-# library(ggforce)
+library(ggforce)
 
 #### let's take a look at some data ####
 
@@ -122,7 +122,8 @@ ggplot(data = lizards) +
 # Jitter plot
 ggplot(data = lizards) + 
   aes(x = Site, y = Height) + 
-  geom_jitter(height = 0, width = .3)  # height and width control how much they can jiter
+  geom_sina() # this is part of the ggforce package; 
+              # there's a similar function in (geom_jitter), but this one is usually better
 
 
 # Continuous X and Y
