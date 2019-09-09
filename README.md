@@ -1,11 +1,25 @@
-# Rstats Peer-led Seminar, Fall 2018
+# Rstats Peer-led Seminar, Fall 2019
 This is the repository for the peer-led R seminar, hosted by UT-Austin's [Center for Computational Biology and Bioinformatics](http://ccbb.biosci.utexas.edu/).  The goal for this class is to provide practical data science programmatic experience using R and RStudio. 
 
-The class will meet on Tuesdays from 2-3 pm in PAT 617. 
+The class will meet on Thursdays from 2-3 pm in PAT 617.
+
+# Schedule
+
+- **09/26**: General Introduction and Basic Data Visualization with ggplot2
+- **10/03**: Data Manipulation with dplyr
+- **10/10**: Tidying and reshaping data with tidyr
+- **10/17**: Exploratory Data Analysis
+- **10/24**: Function Writing
+- **10/31**: Lists and Automation with purrr
+- **11/07**: Advanced ggplot2 and cowplot
+- **11/14**: TBD
+- **11/21**: TBD
+- **11/28**: Thanksgiving
+- **12/05**: TBD
 
 # Installation and Setup Instructions
 
-We will be using the recent version of [R (v. 3.5.1)](https://cran.r-project.org/); older versions may not be able to run some of the code and packages we're using.  Please download and install it on your computer.  Most of our work will be done in [RStudio](https://https://www.rstudio.com/products/rstudio/download/#download), which will also need to be installed.  Please make sure that your version of RStudio is at least 1.1.
+We will be using the recent version of [R (v. 3.6.1)](https://cran.r-project.org/); older versions may not be able to run some of the code and packages we're using.  Please download and install it on your computer.  Most of our work will be done in [RStudio](https://https://www.rstudio.com/products/rstudio/download/#download), which will also need to be installed.  Please make sure that your version of RStudio is at least 1.1.
 
 Once R is setup, please install the latest version of the tidyverse (`install.packages("tidyverse")`).  We also recommend the `cowplot` package.
 
