@@ -3,3 +3,6 @@ Acknowledgements and Sources
 The yeast data and related exercises were adapted from a series of posts by David Robinson on the Variance Explained blog (http://varianceexplained.org/r/tidy-genomics/).
 
 Several of the linear model examples were inspired by the previous work of Spencer Fox.
+
+The regular expressions script was written by Taslima Haque.
+
