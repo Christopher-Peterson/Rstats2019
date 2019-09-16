@@ -19,9 +19,9 @@ The class will meet on Thursdays from 2-3 pm in PAT 617.
 
 # Installation and Setup Instructions
 
-We will be using the recent version of [R (v. 3.6.1)](https://cran.r-project.org/); older versions may not be able to run some of the code and packages we're using.  Please download and install it on your computer.  Most of our work will be done in [RStudio](https://https://www.rstudio.com/products/rstudio/download/#download), which will also need to be installed.  Please make sure that your version of RStudio is at least 1.1.
+We will be using the recent version of [R (v. 3.6.1)](https://cran.r-project.org/); older versions may not be able to run some of the code and packages we're using.  Please download and install it on your computer.  Most of our work will be done in [RStudio](https://https://www.rstudio.com/products/rstudio/download/#download), which will also need to be installed.  Please make sure that your version of RStudio is at least 1.2.
 
-Once R is setup, please install the latest version of the tidyverse (`install.packages("tidyverse")`).  We also recommend the `cowplot` package.
+Once R is setup, please install the latest version of the `tidyverse` (`install.packages("tidyverse")`).  Starting with the third session we'll be new functions introduced in version 1.0.0 `tidyr`, which was released September 13; you may need to install it separately to ensure you have the most up-to-date version (`install.packages("tidyr")`).  We also require the `cowplot` package.
 
 ## Course materials
 
