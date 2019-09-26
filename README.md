@@ -31,3 +31,9 @@ Course materials are being managed by [Git](https://git-scm.com/) and [hosted on
 
 For the first part of the class, we will be following along with [R for Data Science](http://r4ds.had.co.nz/index.html), a free online textbook.  This book will provide additional examples and cover some areas in more depth than we can get to in person.
 
+# Additional resources
+
+Claus Wilke offers a class called SDS 348: Computational Biology and Bioinformatics that teaches R and Python. He makes it freely available online (https://wilkelab.org/classes/SDS348_spring_2019.html). Work through the lectures and assignments for additional practice.
+
+RStudio produces cheatsheets for things such as data import, transformation, and visualization. Great for quick reference while you're coding (https://rstudio.com/resources/cheatsheets/).
+
