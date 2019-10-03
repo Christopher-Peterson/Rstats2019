@@ -23,59 +23,75 @@ mutate(lizards,
        total_length = SVL + Tail,
        rel_limb = Limb/SVL,
        log_total_length = log(total_length)) # You can refer to previously created columns 
-# (You may need to expand your console or use View() to see the new columns)
+
+# Note that the above commands create a new dataframe with added variables, but the result hasn't 
+# been saved
+mutate(lizards, 
+       total_length = SVL + Tail,
+       rel_limb = Limb/SVL,
+       log_total_length = log(total_length)) -> lizards # Give it a new name unless you want to replace your original
+View(lizards_full)
   
 #### The Pipe ( %>% ) ####
 
-# THese are the same:  
-mutate(lizards, Total_length = SVL + Tail)
-lizards %>% mutate(Total_length = SVL + Tail)
-  
 # The pipe strings together functions.
   # It takes the result of one function and makes it 
     # the first argument of the next
-  # b(a(x)) can be re-written as x %>% a() %>% b() or x %>% a %>% b
+  # b(a(x)) can be re-written as x %>% a() %>% b() 
 # Think of it as "then"
   # Take x, then do a, then do b
   # This makes the order you write your code the same as the order it's executed.
 # Almost all of the functions in the tidyverse take data 
   # as the first argument, so the pipe can be very powerful
+
+# These are the same:  
+mutate(lizards, Total_length = SVL + Tail)
+lizards %>% mutate(Total_length = SVL + Tail)
+
 # Example: take the lizard data set, then calculate the total length, 
   # then plot how it varies among sites
 lizards %>% 
   mutate(Total_length = SVL + Tail) %>% 
-  ggplot()+ aes(x = Site, y = Total_length) + geom_boxplot()
+  ggplot(aes(x = Site, y = Total_length)) + geom_boxplot()
 
 # RStudio shortcut: Ctrl + Shift + M (Cmd + Shift + M on Mac)
 
 # Some other useful mutate commands
 lizards %>% mutate(intercept = 1) # creates a fixed column
-lizards %>% mutate(row_number = 1:n()) 
+lizards %>% mutate(row_number = 1:n()) # creates row numbers
 
 #### Exercises: 
 # 1. Add a column to the lizards dataset that gives the lizard's height
   # relative to the maximum height.  
   # Hint: max(x) shows the largest value of x. 
 
+
 # 2. Make a plot of relative limb length (Limb/SVL) vs. 
   # perch circumference (Diameter * pi); 
   # define the new column as perch_circum
 lizards %>% 
   # your code here %>% 
-ggplot() + aes(x = rel_limb, y = perch_circum) + geom_point()
+  ggplot(aes(x = rel_limb, y = perch_circum)) +
+  geom_point()
+  
 
 #### filter(): returns subsets of a data frame ####
 
 # Let's define large lizards:
-mutate(lizards, large = SVL > 60)
+lizards %>%
+  mutate( large = SVL > 60) %>% 
+  View()
 # This is a logical (TRUE/FALSE) column;
 
 # What if we wanted to subset by the large lizards?
-mutate(lizards, large = SVL > 60) %>% filter(large)
+lizards %>%
+  mutate(large = SVL > 60) %>% 
+  filter(large) %>% 
+  View()
 # selects only the rows where large == TRUE
 
 # Alternatively, we don't have to define large:
-filter(lizards, SVL > 60)
+lizards %>% filter(SVL > 60)
 # A filter command returns every row where the logical statement is TRUE
 
 # Logical vectors are created from conditional statements:
@@ -103,9 +119,13 @@ lizards %>% # You can filter multiple statements;
 
 #### Exercises:
 #### 
-# 3. Print a dataframe that shows only the lizards higher than 150 cm. Working off your code, count how many there were.
+# 3. Print a dataframe that shows only the lizards higher than 150 cm. Working off your code, 
+# count how many there were.
 
-# 4. How many lizards perching on trees or shrubs aren't brown?  Visualize the height to diameter relationship between them.
+
+# 4. How many lizards perching on trees or shrubs aren't brown? Visualize the height to diameter 
+# relationship between them.
+
 
 #### select(): keep or remove columns ####
 
@@ -136,15 +156,19 @@ lizards %>% arrange(Site) # Note how there's some ties
 lizards %>% arrange(Site, Color_morph, SVL) # You can add extra variables to break ties
 
   # This can be useful for creating rankings
-lizards %>% arrange(desc(SVL)) %>% 
-  mutate(size_rank = 1:n())
+lizards %>% 
+  arrange(desc(SVL)) %>% 
+  mutate(size_rank = 1:n()) %>%
+  View()
 
 #### summarize(): create summary statistics ####
 
 # summarize (or summarise) is like mutate, but it produces 
   # columns that are shorter than the input
-lizards %>% summarize(mean_SVL = mean(SVL), sd_SVL = sd(SVL),
-                        med_SVL = median(SVL), count = n())
+lizards %>% summarize(mean_SVL = mean(SVL), 
+                      sd_SVL = sd(SVL),
+                      med_SVL = median(SVL), 
+                      count = n())
 # Summarize takes in a bunch of rows and returns one.  
   # You can use any function that takes in a vector and 
   # returns a single value.
@@ -155,10 +179,13 @@ lizards %>% summarize(prop_tree = mean(Perch_type == "Tree"),
                       prop_building = mean(Perch_type == "Building"),
                       prop_other = 1 - (prop_tree + prop_shrub + prop_building))
 
-lizards %>% summarize_all(mean) # summarize_all applies the function to each variable.  Note that we're getting NAs for some, because you can't take the mean of a category.  
+lizards %>% summarize_all(mean) # summarize_all applies the function to each variable.  
+# Note that we're getting NAs for some, because you can't take the mean of a category.  
+
 # That didn't make sense for Site, Color_morph, and Perch_type,
   # so let's re-do that with only the numeric columns
-lizards %>% summarize_if(is.numeric,mean)
+lizards %>% summarize_if(is.numeric, mean)
+
 # There are similar functions like mutate_all, filter_if, etc.
  
 #### group_by(): apply functions separately to each group ####
@@ -168,30 +195,15 @@ lizards %>% summarize_if(is.numeric,mean)
 lizards %>% group_by(Site) # This doesn't seem to do much 
 
 lizards %>% group_by(Site) %>% 
-  summarize(mean_SVL = mean(SVL), count = n()) 
+  summarize(mean_SVL = mean(SVL), 
+            count = n()) 
 # But that's interesting...
 
 # You can group by multiple factors:
 lizards %>% group_by(Site, Color_morph) %>% 
-  summarize(mean_SVL = mean(SVL), count = n()) %>% ungroup() 
-
-# A more complicated example:
-# Plot the mean +/- standard error of each color at each site
-lizards %>% group_by(Site, Color_morph) %>% 
-  # Calculate Mean and SE
-  summarize(mean_SVL = mean(SVL), std_err = sd(SVL) / sqrt(n())) %>% #
-  ungroup() %>% 
-  # Calculate upper/lower limits for error bars
-  mutate(lower = mean_SVL - std_err, upper = mean_SVL + std_err) %>% 
-  ggplot() + # Create the plot
-    aes(x = Site, y = mean_SVL, color = Color_morph, 
-        ymin = lower, ymax = upper) + 
-    # Add the points and error bars
-    geom_errorbar(position = position_dodge(width = .45)) +
-    # Note that position argument is used to keep the colors from overlapping
-    geom_point(position = position_dodge(width = .45))  
-
-# group_by() doesn't just work with summarize()
+  summarize(mean_SVL = mean(SVL), 
+            count = n()) %>% 
+  ungroup() 
 
 # What's the relative height of each lizard within each site?
 lizards %>% group_by(Site) %>% 
@@ -205,9 +217,15 @@ lizards %>% group_by(Site) %>%
 # 5. Visualize the relationship between the maximum height at a site and the average limb length
 lizards %>% 
   # Your code here %>% 
-  ggplot() + aes(x = max_height, y = mean_limb) + 
+  ggplot(aes(x = max_height, y = mean_limb)) + 
   geom_smooth(method = "lm") + geom_point() 
   
 # Advanced question: For each site, what's the mean limb length 
   # of the five largest individuals (by SVL)? 
   # What proportion of these indiviuals is blue? 
+
+
+
+
+
+
