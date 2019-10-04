@@ -37,3 +37,5 @@ Claus Wilke offers a class called SDS 348: Computational Biology and Bioinformat
 
 RStudio produces cheatsheets for things such as data import, transformation, and visualization. Great for quick reference while you're coding (https://rstudio.com/resources/cheatsheets/).
 
+Graduate students in ICMB offer a weekly open coding hour on Wednesdays from 12:30-1:30 in MBB 2.232. Drop by with questions or help with your code from other students.
+
