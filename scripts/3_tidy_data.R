@@ -186,20 +186,6 @@ tidy_yeast = yeast_data %>%
 tidy_yeast
 
 # Let's look at another way to do names_sep
-yeast_data2 = read_csv("data/yeast_data_partial2.csv")
-yeast_data2 # This is the same dataset, but now the 
-            # substrate and concentration are separated by an underscore
-# Use a character vector instead of an integer to indicate what to separate by
-yeast_data2 %>% 
-  pivot_longer(G_0.05:U_0.3,
-               names_to = c("Substrate", "Concentration"),
-               names_sep = "_", # underscore signifies separation
-               values_to = "Gene_expression")
-  # Note; names_sep treats this as regular expression (regex), 
-  # so you may occasionally get some weird behavior 
-  # we'll try to cover some regex stuff later in this seminar;
-  # there's also a file "extra_regular_expressions.R" that you 
-  # may wish to check out.
 
 ### Another example:
 
@@ -222,11 +208,19 @@ lizards_smry %>%
   pivot_longer(-Site, 
                names_to = c("Trait", ".value"),
                names_sep = "_")
-# Note the ".value" in the names
-  # This is a special indicator that tells 
-  # pivot to create one column for each matching name
-  # and place the corresponding values into it
-  # Note we didn't use a values_to argument
+# Two important things to note about this:
+  # the ".value" in the names_to
+    # This is a special indicator that tells 
+    # pivot to create one column for each matching name
+    # and place the corresponding values into it
+    # Note we didn't use a values_to argument
+  # names_sep used text instead of an integer
+    # This splits at and removes the separator 
+      # Note; names_sep treats this as regular expression (regex), 
+      # so you may occasionally get some weird behavior 
+      # we'll try to cover some regex stuff later in this seminar;
+      # there's also a file "extra_regular_expressions.R" that you 
+      # may wish to check out.
 
 #############
 ## Exercise 2
