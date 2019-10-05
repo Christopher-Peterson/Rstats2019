@@ -53,6 +53,7 @@ base_plot + aes(color = Limb) # continuous color
 
 # Scales change the way aesthetics look
 base_plot + aes(color = Limb) + scale_color_viridis_c()
+base_plot + aes(color = Color_morph) + scale_color_viridis_d()
 
   # Shape
 base_plot + aes(shape = Color_morph)
@@ -92,7 +93,8 @@ ggplot(data = lizards) +
 
 ggplot(data = lizards) + 
   aes(x = Diameter) + 
-  geom_histogram(binwidth = 2.5) # binwidths option fixes the warning
+  geom_histogram(binwidth = 2.5, 
+     color = "black", fill = "white") # binwidths option fixes the warning
 
 # Density Plots
 ggplot(data = lizards) + 
@@ -101,6 +103,17 @@ ggplot(data = lizards) +
 
 # Exercise: How could you use a density plot or histogram to compare
   # Diameter distribution of different lizard Color_morph morphs?
+
+ggplot(data = lizards) + 
+  aes(x = Diameter, color = Color_morph) + 
+  geom_density()
+
+ggplot(data = lizards) + 
+  aes(x = Diameter) + 
+  geom_histogram(
+    aes(fill = Color_morph), color = "black",
+    binwidth = 2.5)
+
 
 # Discrete X, continuous Y
 
