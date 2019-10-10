@@ -4,14 +4,10 @@ library(cowplot)
 # library(readxl)
 theme_set(theme_cowplot())
 
-# Organization:
+?pivot_wider
 
-  # pivot_wider()
-    # genotypes
-    # some diversity data?
-  # Separate
-
-
+# If this doesn't pull up a help file, you need to re-install tidyr
+# install.packages("tidyr")
 
 ## New data set: ####
 succession_data = read_csv("data/wide_succession_data.csv")
@@ -116,6 +112,10 @@ tidy_succession =  succession_sep %>%
         Team, Habitat, Sample,# columns being combined
         sep = "-", remove = FALSE) %>% # remove = FALSE keeps the old columns around
   select(-Team, -Sample)
+# Note: 
+# you could have replaced unite() with 
+# mutate(Sample_quadrant = paste(Team, Habitat, Sample, sep = "-)) %>% 
+
 
 # Now we can ask some questions about the data
 # How many of each speceis were found in each canopy type?  Does it differe between Habitat and Canopy?
@@ -222,12 +222,6 @@ lizards_smry %>%
       # there's also a file "extra_regular_expressions.R" that you 
       # may wish to check out.
 
-#############
-## Exercise 2
-#############
-
-# HELP!!!!!!!
-
 ## Widening data #####
 
 # Sometimes, you need to reverse a pivot_longer, 
@@ -250,7 +244,7 @@ tidy_succession %>%
     values_fill = list(present = 0))
 
 ############
-## Exercise 3
+## Exercise 2
 ############
   # re-Widen the genotype data you tidied in exercise 1
   # each POS should become its own column
