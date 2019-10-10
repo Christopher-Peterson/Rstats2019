@@ -1,9 +1,15 @@
 # Tidyr
 library(tidyverse)
 library(cowplot)
-library(readxl)
+# library(readxl)
+theme_set(theme_cowplot())
 
-## New data set: 
+?pivot_wider
+
+# If this doesn't pull up a help file, you need to re-install tidyr
+# install.packages("tidyr")
+
+## New data set: ####
 succession_data = read_csv("data/wide_succession_data.csv")
 glimpse(succession_data)
 View(succession_data)
@@ -24,43 +30,101 @@ View(succession_data)
 
 # First, we should convert all of the presence/absense species 
   # columns into a single column
+  
+#### pivot_longer ####
+
 # This is done with the gather() command
-gathered_succ = succession_data %>% 
-  gather(key = "Species", # Name of the column that stores the old column names
-         value = "is_present", # Name of the oclumn that stores old cell values
-         -Type, -Team, -Sample,  # Here, you put the columns that you want to gather
-         -Quadrant, -Distance, -DBH) # this works just like select()
-         # In this case, it's easier to list the columns we DON'T want to gather
-# Equivalently:
 succession_data %>% 
-  gather(key = "Species", value = "is_present", 7:22) # Column numbers also work
-View(gathered_succ) # Note the Species and is_present column
+  pivot_longer(
+    # The column names you want to reshape
+    # In this case, as with dplyr::select, the minus indicates everything BUT 
+    # these columns
+    cols = -c(Type, Team, Sample, Quadrant, Distance, DBH),
+    names_to = "Species", # Name of the column that stores the old column names
+    values_to = "is_present") %>%  # Name of the oclumn that stores old cell values
+  View
+
+# Equivalently:
+succession_data %>% pivot_longer(
+    7:22, # positions of the columns to pivot
+    names_to = "Species", values_to = "is_present")
+succession_data %>% pivot_longer(
+  # You can use ranges of column names, though that's not practical here
+    `Acer negundo (Boxwood elder)`:`Ulmus crassifolia (Cedar elm)`,
+    names_to = "Species", values_to = "is_present")
+succession_data %>% pivot_longer(
+  contains("("), # All of the species names have a parentheses in them
+  names_to = "Species", values_to = "is_present")
+
+
+# Note that there are a lot of NAs in the is_present column,
+  # we can drop these with:
+succession_longer = succession_data %>% 
+  pivot_longer(7:22, names_to = "Species",
+               values_to = "is_present", 
+               values_drop_na = TRUE)
+succession_longer
+
+
 
 # All the is_present column is telling us is whether that particular species was 
 # there or not; we don't need the absences, so we can get rid of them
-gathered_succ %>% filter(!is.na(is_present)) %>% select(-is_present)
+succession_longer %>%  select(-is_present)
+
+# Add an example?
+
+#############
+## Exercise 1
+#############
+
+# This is a sample of simulated genotypes from 100 individuals at 89 loci
+# genotypes are coded 0, 1, 2 for how many of the minor alleles they have
+genotypes_wide = read_csv("data/genotypes_wide.csv")
+
+# reshape this data so that it has three columns: 
+  # Indiv (as is)
+  # POS (the position/locus, corresponding to column headers)
+  # gt (the genotype, corresponding to cell values)
+  # Remove the missing data
+# Bonus: try using the "names_prefix" argument remove the "POS_"
+
+
+#### Separate ####
+
 # To do anything interesting with this, we should be able to separately 
 # work with habitat type and canopy type
 
 # the separate() command works for that
 
-gathered_succ %>% filter(!is.na(is_present)) %>% select(-is_present) %>% 
-  separate(Type, # Column to separate
-           c("Habitat", "Canopy"), # Names of the new columns to separate into
+succession_sep = succession_longer %>%  
+  select(-is_present) %>% 
+  separate(col = Type, # Column to separate
+           into = c("Habitat", "Canopy"), # Names of the new columns to separate into
            sep = "-") # the character used to mark the separation
 
-# If we want to be able to identify individual sample points, we should make a new column
+# Individual sample points are identified by a combination of 
+  # Habitat, Team, and Sample
+  # we could make a new column for them with unite()
 
-tidy_succession =  gathered_succ %>% 
-  filter(!is.na(is_present)) %>% select(-is_present) %>% 
-  separate(Type, c("Habitat", "Canopy"), sep = "-")  %>% 
-  mutate(Sample_point = paste(Habitat, Team, Sample, sep = "-")) %>% 
-  select(-Team, -Sample, -Quadrant)
+tidy_succession =  succession_sep %>% 
+  # Combine the indicator
+  unite(col = "Sample_quadrant", # new column name 
+        Team, Habitat, Sample,# columns being combined
+        sep = "-", remove = FALSE) %>% # remove = FALSE keeps the old columns around
+  select(-Team, -Sample)
+# Note: 
+# you could have replaced unite() with 
+# mutate(Sample_quadrant = paste(Team, Habitat, Sample, sep = "-)) %>% 
+
 
 # Now we can ask some questions about the data
 # How many of each speceis were found in each canopy type?  Does it differe between Habitat and Canopy?
-tidy_succession %>% group_by(Habitat, Canopy, Species) %>% 
-  summarize(N = n()) %>% mutate(freq = N/sum(N)) # Note: this is the relative frequency of the habitat/canopy combination, due to the dataframe's grouping
+tidy_succession %>% 
+  group_by(Habitat, Canopy, Species) %>% 
+  summarize(N = n()) %>% # total number of species per group
+  # the summarize command ungrouped by Species
+  mutate(freq = N/sum(N)) 
+  # frequency of the species in the Habitat/Canopy
 
 # Create a bar plot showing how species abundnace varies among 
 # habitats and canopy types
@@ -68,92 +132,122 @@ tidy_succession %>% group_by(Habitat, Canopy, Species) %>%
   summarize(N = n()) %>%
   ggplot() + aes(x = Canopy, y = N, fill = Species) +
   facet_wrap(~Habitat) + 
+  scale_fill_viridis_d(option = "magma")+
   geom_col(position = position_dodge()) # Column chart; try re-running w/o position argument
 
 
-### A look back at the lizard data
 
-# This is more or less the same lizard data, but in a less processed state
-messy_lizards <- read_csv("data/anoles_messy.csv")
+#### TODO: ####
+  ## pivot_longer() with multiple names or values columns
+  ## Find some examples to use the more complicated pivot function examples
+  ## pivot_wider()
+  ## Maybe also use extract(), though that could require some regex bits?
 
-# Take a look at the data
-messy_lizards
-glimpse(messy_lizards) # glimpse is helpful when you have a lot of columns
-View(messy_lizards)
+## Pivoting with multiple columns
 
-# This data is tidy
-# Each row is a single observation,
-# Each column is a variable.
-# However, sometimes it might be convienient to over-tidy the data.
+# These are data from an experiment that tested yeast gene expression
+# under different levels of nutrient limitation
+yeast_data = read_csv("data/yeast_data_partial.csv")
+# yeast_data2 = read_csv("data/yeast_data_partial.csv")
 
-# Let's put all of the variables other than ID, Site, and Color into a single column.
+# The first four columns indicate 
+  # gene name, biological process, 
+  # molecular function, and systematic_id
 
-# This can help us see if there are any obvious problems with our data 
+# The remaining columns (G0.05 through U0.3) 
+  # contain TWO variables in their name
+  # The nutrient that was added to the substrate (first letter)
+  # and rate at which it was added (the rest)
+  # the values in these columns is the gene expression level
+glimpse(yeast_data)
 
-over_tidy_anoles <- messy_lizards %>% 
-  gather(key = "Variable", value = "Value", contains("("))
-# the contains() function selects all variables with a "(" in their name
-# You can find simlar functions by putting ?select_helpers into the console
-# an alternative way to write this: 
-  # over_tidy_anoles <- gather(messy_lizards, key = "Variable", value = "Value", -`Anole ID`, -Site, -Color)
+# We would like to convert all of these columns into three:
+  # Substrate
+  # Concentration
+  # Gene_expression
 
-over_tidy_anoles %>% ggplot() + 
-  aes(x = Value) + # aes() connects columns in the data frame to graph features
-  geom_histogram() + # Alternatively, you could try:
-  # geom_density() + 
-  # geom_freqpoly() +
-  facet_wrap(~Variable, scales = "free") # A facet creates different sub-plots; 
-# scales = "free" lets the different plots have different axis ranges
+yeast_data %>% 
+  pivot_longer(G0.05:U0.3,
+    names_to = c("Substrate", "Concentration"),
+    names_sep = 1, # separate the names after the first character
+    values_to = "Gene_expression")
 
-# Something looks funny with Snout-Vent Length
+# Notice that Concentration is listed as a 
+  # <chr> column (i.e., text, not a number)
+  # we can fix that with the names_ptype argument
 
-messy_lizards %>% # arrange(desc(...)) sorts in descending order
-  arrange(desc(`Snout-Vent Length (mm)`)) %>% glimpse
+tidy_yeast = yeast_data %>% 
+  pivot_longer(G0.05:U0.3,
+               names_to = c("Substrate", "Concentration"),
+               names_sep = 1, # separate the names after the first character
+               names_ptypes = list(Substrate = character(),
+                                   Concentration = numeric()),
+               values_to = "Gene_expression")
+tidy_yeast
 
-## Our problem lizard is apparently 80 meters long.
-## You can either replace this with a missing value (NA) or check if there was a data entry error.
-## For this hypothetical example, let's say we our data sheet said it was supposed to be 80.4
+# Let's look at another way to do names_sep
 
-# Most of the time, you'll probably just edit in your data sheet, but
-# this is another option
-messy_lizards <- messy_lizards %>% 
-  mutate(`Snout-Vent Length (mm)` = # The if_else() function
-           if_else(`Snout-Vent Length (mm)` == 80469.2, # This is a condition
-                   80.4, # It returns this value where the condition is TRUE
-                   `Snout-Vent Length (mm)`)) # and this value where it is FALSE
+### Another example:
 
-messy_lizards <- messy_lizards %>% 
-  rename(ID = `Anole ID`, SVL = `Snout-Vent Length (mm)`,
-         Tail = `Tail Length (mm)`, Limb = `Limb Length (mm)`, Mass = `Mass (g)`,
-         Height = `Perch Height (cm)`, Diameter = `Perch Diameter (cm)`)
+# This contains site-level summary statistics for our lizard data
+lizards_smry = read_csv("data/anoles_smry.csv")
+View(lizards_smry)
 
-messy_lizards %>% ggplot(aes(x = SVL)) + geom_histogram()
+# The column names are trait_summary
+  # We want to create one column for each summary stat
+  # and an extra column that indicates the trait
+  # Desired columns:
+    # Site
+    # Trait
+    # mean
+    # sd
+    # ...
+    # max
 
+lizards_smry %>% 
+  pivot_longer(-Site, 
+               names_to = c("Trait", ".value"),
+               names_sep = "_")
+# Two important things to note about this:
+  # the ".value" in the names_to
+    # This is a special indicator that tells 
+    # pivot to create one column for each matching name
+    # and place the corresponding values into it
+    # Note we didn't use a values_to argument
+  # names_sep used text instead of an integer
+    # This splits at and removes the separator 
+      # Note; names_sep treats this as regular expression (regex), 
+      # so you may occasionally get some weird behavior 
+      # we'll try to cover some regex stuff later in this seminar;
+      # there's also a file "extra_regular_expressions.R" that you 
+      # may wish to check out.
 
-##############
-## Exercise: 
-## Re-make over_tidy_anoles now that we've corrected the data
-##############
+## Widening data #####
 
+# Sometimes, you need to reverse a pivot_longer, 
+  # many packages or external programs require
+  # data to be in a matrix-like form, for example
 
-# We also have some data about each Site.  Let's read this in.
-anole_sites = read_csv("data/anole_sites.csv")
+# Let's widen our succession data
+tidy_succession %>% 
+  mutate(present = 1) %>% # We need to add this column because otherwise there's no value
+  pivot_wider(
+    names_from = Species, 
+    values_from = present)
+# We can provide options to automatically replace NAs with defaults
+tidy_succession %>% 
+  mutate(present = 1) %>% # We need to add this column because otherwise there's no value
+  pivot_wider(
+    names_from = Species, 
+    values_from = present, 
+    # This fills missing values from the present column w/ zeros
+    values_fill = list(present = 0))
 
-anole_sites
-## The Precipitation and Temperature rows have text included with their values.  
+############
+## Exercise 2
+############
+  # re-Widen the genotype data you tidied in exercise 1
+  # each POS should become its own column
+  # missing values should be replaced with -1
 
-##########
-## Exercise:
-## Use remove the units from Precipitation and Temperature columns;
-## What does the 'convert = TRUE' argument in separate() do, and would it be useful in this case?
-##########
-
-
-
-# We'd like to combine this table with the individual anole data.  To do that, we need a join operation
-anole_data = left_join(messy_lizards, anole_sites, by = "Site") # there are a variety of join functions; look at the dplyr cheatsheet to get a feel for them
-anole_data # This adds new columns to anole corresponding to the site's temp., precip., lat., and long.
-
-# Let's save our cleaned and joined data.
-write_csv(anole_data, "data/clean_anole_data.csv")
 
