@@ -6,8 +6,16 @@ theme_set(theme_cowplot())
 
 #### Data Cleaning: The lizard data ####
 
-# This is more or less the same lizard data, but in a less processed state
-messy_lizards <- read_csv("data/anoles_messy.csv")
+# We want to take a look at a more less processed version of the lizard data we've been working with
+# It's currently stored in an excel file
+library(readxl) # installed with tidyverse
+
+# Since excel files have multiple sheets, we need to know which ones the data we want is in
+excel_sheets("data/anoles_messy.xlsx")
+
+# Let's start with the individual data
+
+messy_lizards <- read_excel("data/anoles_messy.xlsx", sheet = "individual_data")
 
 glimpse(messy_lizards) 
 View(messy_lizards)
@@ -73,8 +81,8 @@ messy_lizards %>% ggplot(aes(x = SVL)) + geom_histogram()
 ## and re-create the summary graphs. 
 ##############
 
-# We also have some data about each Site.  Let's read this in.
-anole_sites = read_csv("data/anole_sites.csv")
+# Let's look at the site-level anole data
+anole_sites = read_csv("data/anoles_messy.xlsx", sheet = "site_data")
 
 anole_sites
 ## The Precipitation and Temperature rows have text included with their values.  
@@ -111,7 +119,7 @@ write_csv(anole_data, "data/clean_anole_data.csv")
 # We want to get the mean and standard error of all numeric variables,
   # separated by Site
 # first, we need to tell R how to calculate standard error:
-std_err_mean = function(x, na.rm = FALSE) {
+standard_error = function(x, na.rm = FALSE) {
   n = sum(!is.na(x))
   sd(x, na.rm = na.rm) / sqrt(n)
 }
@@ -121,7 +129,7 @@ anole_smry = anole_data %>%
   summarize_at(.vars = vars(Limb:Tail), 
    # the vars() function tells a scoped dplyr verb to use those columns; 
    # you can use anything inside of it that you'd use with select()
-   .funs = list(Mean = mean, SE = std_err_mean), # functions to use are a named list
+   .funs = list(Mean = mean, SE = standard_error), # functions to use are a named list
    na.rm = TRUE # extra named arguments to pass to ALL functions
    )
 
