@@ -82,7 +82,7 @@ messy_lizards %>% ggplot(aes(x = SVL)) + geom_histogram()
 ##############
 
 # Let's look at the site-level anole data
-anole_sites = read_csv("data/anoles_messy.xlsx", sheet = "site_data")
+anole_sites = read_excel("data/anoles_messy.xlsx", sheet = "site_data")
 
 anole_sites
 ## The Precipitation and Temperature rows have text included with their values.  
