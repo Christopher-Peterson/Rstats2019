@@ -31,8 +31,9 @@ View(messy_lizards)
 # This can help us see if there are any obvious problems with our data 
 
 extra_long_lizards <- messy_lizards %>% 
+  # gather(key = "variable", value = "value", -ID, -Site, -Color_morph)
   pivot_longer(contains("("),
-               names_to = "variable", values_to = "value")
+  names_to = "variable", values_to = "value")
 # the contains() function selects all variables with a "(" in their name
 # You can find simlar functions by putting ?select_helpers into the console
 # an alternative way to write this: 
@@ -81,11 +82,26 @@ messy_lizards %>% ggplot(aes(x = SVL)) + geom_histogram()
 ## and re-create the summary graphs. 
 ##############
 
+messy_lizards %>% 
+  pivot_longer(Limb:Tail,
+               names_to = "variable", values_to = "value") %>% 
+  ggplot() + 
+  aes(x = value) + # aes() connects columns in the data frame to graph features
+  geom_histogram() + # Alternatively, you could try:
+  # geom_density() + 
+  # geom_freqpoly() +
+  facet_wrap(~variable, scales = "free")
+
+
+
 # Let's look at the site-level anole data
 anole_sites = read_excel("data/anoles_messy.xlsx", sheet = "site_data")
 
 anole_sites
 ## The Precipitation and Temperature rows have text included with their values.  
+
+anole_sites %>% 
+  separate(Temperature, c("Temperature", NA), sep = " ", convert = TRUE)
 
 ##########
 ## Exercise:
@@ -95,16 +111,25 @@ anole_sites
   ## and would it be useful in this case?
 ##########
 
+anole_sites_clean = anole_sites %>% 
+  separate(Temperature, c("Temperature", NA), sep = " ", convert = TRUE) %>% 
+  separate(Precipitation, c("Precipitation", NA), sep = " ", convert = TRUE) 
+  
+anole_sites %>% 
+  extract(Precipitation, c("Precipitation", "units"), 
+          regex = "(.+) (.+)", convert = TRUE)
+
 
 # We'd like to combine this table with the individual anole data.  
   # To do that, we need a join operation
-anole_data = left_join(messy_lizards, anole_sites, by = "Site") 
+anole_data = left_join(messy_lizards, anole_sites_clean,
+                       by = "Site") 
   # there are a variety of join functions; 
   # look at the dplyr cheatsheet to get a feel for them
 anole_data # This adds new columns to anole corresponding to the site's temp., precip., lat., and long.
-
+View(anole_data)
 # Let's save our cleaned and joined data.
-write_csv(anole_data, "data/clean_anole_data.csv")
+write_csv(anole_data, "data/clean_anole_data.csv", na = "")
 
 ### Calculate and visualize summary statistics ####
 
@@ -124,14 +149,45 @@ standard_error = function(x, na.rm = FALSE) {
   sd(x, na.rm = na.rm) / sqrt(n)
 }
 
-anole_smry = anole_data %>% 
+anole_smry = messy_lizards %>% 
   group_by(Site) %>% 
   summarize_at(.vars = vars(Limb:Tail), 
    # the vars() function tells a scoped dplyr verb to use those columns; 
    # you can use anything inside of it that you'd use with select()
-   .funs = list(Mean = mean, SE = standard_error), # functions to use are a named list
+   .funs = list(Mean = mean, 
+                SE = standard_error), # functions to use are a named list
    na.rm = TRUE # extra named arguments to pass to ALL functions
    )
+
+messy_lizards %>% 
+  group_by(Site) %>% 
+  summarize_if(is.numeric, 
+               # the vars() function tells a scoped dplyr verb to use those columns; 
+               # you can use anything inside of it that you'd use with select()
+               .funs = list(Mean = mean, 
+                            SE = standard_error), # functions to use are a named list
+               na.rm = TRUE # extra named arguments to pass to ALL functions
+  )
+
+View(anole_smry)
+
+messy_lizards %>% 
+  ggplot() + 
+  aes(x = SVL) + 
+  facet_grid(Color_morph ~ Site) + 
+  geom_histogram()
+
+anole_smry %>% 
+  pivot_longer(-Site,
+               names_to = c("Trait", ".value"),
+               names_sep = "_") %>% 
+  # mutate(upper = Mean + SE, lower = Mean - SE) %>% 
+  ggplot() + 
+  aes(x = Site, y = Mean) + 
+  facet_wrap(vars(Trait), scales = "free_y") + 
+  geom_point() + 
+  geom_linerange(
+    aes(ymin = Mean - SE, ymax = Mean + SE)  )
 
 ##############
 ### Exercise: 
