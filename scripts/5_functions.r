@@ -262,6 +262,14 @@ above_mean = function(data, variable) {
 }
 lizards %>% above_mean(SVL)
 
+# Passing a new column name (for mutate and summarize) 
+add_one_to_col = function(data, variable, var_name) {
+  data %>% mutate( {{var_name}} := {{variable}} + 1) # Note the := instead of =
+}
+lizards %>% add_one_to_col(SVL, var_name = SVL_plus_one) %>% View
+lizards %>% add_one_to_col(SVL, var_name = "SVL_plus_one") # You can pass the new name as a character vector too
+
+
 # To see if a function plays nicely with {{ }}, look at the help page.
 ?aes
   # The page should mention that the function supports 
