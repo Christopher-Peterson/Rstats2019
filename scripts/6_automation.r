@@ -315,6 +315,8 @@ accumulate(1:10, ~.x + .y, .init = 1000)
 #### Exercise #####
 #### Idea?
 
+### Combining map() and reduce() ####
+
 # Combining map and reduce functions can be a powerful goal
   # For example, let's say you wanted to remove all of the rows
   # of a data frame that contain any NA values, but you don't know
@@ -336,8 +338,9 @@ messy_lizards_with_na = messy_lizards %>%
 messy_lizards_with_na %>% filter(na_row) %>% View # All remaining rows contain at least one NA
 messy_lizards_with_na %>% filter(!na_row) # drop the rows
 
-# Accumulate can even be used for iterated simulations
-# For example: here's a simple model of genetic drift
+
+# iterated simulations with accumulate() ####
+# Here's a simple model of genetic drift that can be implemented with accumulate()
 
 drift_one = function(allele_freq, generation, N) {
   # Generate next generation from a binomial distribution
