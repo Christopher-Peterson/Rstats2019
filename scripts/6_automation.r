@@ -389,3 +389,12 @@ genetic_drift_2 = function(initial_freq, N, generations = 50) {
              .init = initial_freq) #initial allele freq
 }
 genetic_drift_2(.1, 100, 100)
+
+#### Optional Exercise:
+# How does the initial allele frequency affect time to fixation?  
+  # visualize the results
+
+# create initial values
+initial_freqs = seq(.05, .5, by = .05) %>% # we're only going to .5 so that fixation mostly happens at 0, not 1
+  rep(10) # since drift is a random process, replicates are necessary for the simulation
+initial_freqs
