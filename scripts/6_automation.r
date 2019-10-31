@@ -313,7 +313,15 @@ accumulate(1:10, `+`) # note the back-ticks; this tells R that "+" is a function
 accumulate(1:10, ~.x + .y, .init = 1000)
 
 #### Exercise #####
-#### Idea?
+set.seed(1234) # fixes random numbers
+speed_data = 
+  tibble(year = 1946:2019) %>% 
+  mutate(top_speed = # generate some random numbers
+           25 + - 3.5 * (year-mean(year))/20 + rnorm(n(), 0, 3.6))
+speed_data
+# These data contain the top speed in a race for each year since 1946
+# Which years set new fastest speed records?  
+# Use accumulate() in your solution
 
 ### Combining map() and reduce() ####
 
