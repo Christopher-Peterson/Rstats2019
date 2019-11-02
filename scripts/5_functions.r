@@ -62,7 +62,7 @@ normalize3 = function(x, ..., na.rm = TRUE) {
   stdev = sd(x, na.rm = na.rm,...)
   (x - mean_val) / stdev
 }
-normalize3(missing_vector, FALSE) # You'll get weird errors if this happens
+normalize3(missing_vector, na.rm = FALSE) # You'll get weird errors if this happens
 
 # Let's add a bit more flexibility to our normalize function.  
   # In some cases, it's a good idea to normalize data by dividing by the mean instead of the sd
@@ -127,8 +127,6 @@ lizards %>% group_by(Site) %>% # This bit of code is much more readable
 lizards %>% group_by(Site) %>% # This bit of code is much more readable 
   summarize(color_diversity = shannon_diversity(Color_morph),
             perch_diversity = shannon_diversity(Perch_type))
-
-
 
 # Make your function names descriptive,
   # RStudio can tab-complete function names, so don't make it too short to avoid typing
@@ -200,7 +198,7 @@ lizards = read_csv("data/anoles.csv")
 # Let's see how the Limb Length : Height relationship varies by site:
 
 lizards %>% 
-  # filter(Site == "A") %>% 
+  filter(Site == "A") %>%
   ggplot(aes(x = Limb, y = Height)) +
   facet_wrap(~Site, scale = "free")+
   geom_smooth(method = "lm") + geom_point()
@@ -220,6 +218,16 @@ lizards %>%
 # Modify this block of code into a function that could plot arbitrary sites?
 # Allow the function to have optional arguments for 
   # geom_point and geom_smooth
+
+plot_site = function(site){
+  lizards %>% 
+    filter(Site == site) %>%
+    ggplot(aes(x = Limb, y = Height)) +
+    facet_wrap(~Site, scale = "free")+
+    geom_smooth(method = "lm") + geom_point()
+}
+plot_site("R")
+
 
 #### Functions with tidyverse variables ####
 # a.k.a., tidy evaluation
@@ -275,4 +283,3 @@ lizards %>% add_one_to_col(SVL, var_name = "SVL_plus_one") # You can pass the ne
   # The page should mention that the function supports 
   # "quoting," "quasiquotation," "unquoting," or something similar. 
 
-##### We could use an exercise?
