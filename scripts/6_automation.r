@@ -56,7 +56,7 @@ re_nested
 re_nested$nested_data
 
 # If you have a grouped data frame, nest will automatically nest by group
-unnested_example %>% group_by(B) %>% nest()
+unnested_example %>% group_by(A) %>% nest()
 # Except for grouping variables
 
 lizards = read_csv("data/anoles.csv")
@@ -86,7 +86,7 @@ list(
 # It's clear that we want to use the function 'mean' on every element of x_list
 
 map(.x = x_list, # A vector or list
-    .f = mean) # a function to apply to each element of the vector or list
+    .f = mean ) # a function to apply to each element of the vector or list
 
 # The map function: argument 1 is a vector or list; 
 # argument 2 is the function to be applied to each element of the list
@@ -94,7 +94,8 @@ map(.x = x_list, # A vector or list
 
 # median and quartiles for each list element
 map(x_list, .f = quantile, # Named arguments after this are passed to the function
-    probs = c(.25, .5, .75)) # probs is an argument passed to quantile() that doesn't vary
+    probs = c(.25, .5, .75), 
+    na.rm = TRUE) # probs is an argument passed to quantile() that doesn't vary
 
 # You can specify the return type if you know it ahead of time
 map_dbl(x_list, mean) # returns a numeric (double) vector
@@ -121,7 +122,7 @@ x_list %>% map_dbl(mean)
 # You can use map with newly defined functions
 
 # For example:
-x_list %>% map_dbl(~exp(mean(log(.x))))
+map_dbl(.x = x_list, ~exp(mean(log(.x))))
   # The tilde tells map that you're creating a new function 
     # (note: this doesn't work outside of map and some other tidyverse functions)
     # The function's first argument will be called .x
@@ -163,14 +164,11 @@ map2_dbl(.x = lizards$SVL, .y = lizards$Tail,
                         # .x and .y
 # There's also imap
 # It takes one argument, and acts like 
-# map2(.x, .y = names(.x))
+# map2(.x, .y = names(.x)) # if .x has names, or 
+# map2(.x, .y = seq_along(.x)) # if .x doesn't.
 
-x_list %>% imap_chr(~paste("The mean of", .y, "is", mean(.x) %>% round(2)))
-
-### Exercise:   #####
-### modify the above read_csv code to include a column with the filename 
-  ### or site name as an extra column 
-  ### (hint: use a mutate command inside the map function)
+x_list %>% # unname() %>%  # uncomment to switch from names to index positions
+  imap_chr(~paste("The mean of", .y, "is", mean(.x) %>% round(2)))
 
 ########### pmap: mapping with multiple variables)
 
@@ -213,7 +211,7 @@ random_num_pars %>%
 quantile_list <-  c(.025, .1, .25, .5, .75, .9, .975)
 
 rng_quantiles <- random_num_pars %>% 
-  mutate(random_nums = pmap(random_num_pars, runif)) %>% 
+  mutate(random_nums = pmap(random_num_pars, .f = runif)) %>% 
   mutate(quantile_vals = random_nums %>% 
            map(quantile, probs = quantile_list),
          quantile_levels = map(quantile_vals, names))
@@ -246,7 +244,7 @@ plot_limb_height(lizards)
 
 # Let's separate it
 plot_table = lizards %>% group_by(Site) %>% 
-  nest(.key = "data") %>% # Take a nested table
+  nest() %>% # Take a nested table
   mutate(plot = map2(data, Site, plot_limb_height)) # and use the mapping function
 plot_table # the plot column is a list of ggplot objects
 
@@ -256,7 +254,7 @@ dir.create("output") # create an output directory
 
 # Let's save these plots
 # First, create a data frame with the plot and the filename
-save_table = plot_table %>% mutate(name = paste0("Site_", Site, ".png")) %>% 
+save_table = plot_table %>% ungroup %>% mutate(name = paste0("Site_", Site, ".png")) %>% 
   select(name, plot)
 # Then write a function that will save it
 save_plot = function(name, plot, ...) {
@@ -264,7 +262,8 @@ save_plot = function(name, plot, ...) {
          ...) # ... allows for extra, fixed options
 }
 # And map it; note that the function arguments match the data frame column names
-save_table %>% pmap(save_plot, width = 5, height = 4, dpi = 200) # width, height, and dpi go to the dots
+save_table %>% 
+  pmap(save_plot, width = 5, height = 4, dpi = 200) # width, height, and dpi go to the dots
 
 
 # reduce() and accumulate() ###########
@@ -289,6 +288,7 @@ plus = function(left, right) {
 
 accumulate(.x = 1:10, 
            .f = plus)
+
 # Let's break down what's going here:
 # .x is the data we're passing,
 # .f must be a function that takes at least two arguments
@@ -334,6 +334,9 @@ library(readxl)
 # Let's pull in some data with lots of NAs
 messy_lizards = read_excel("data/anoles_messy.xlsx", sheet = "individual_data")
 
+messy_lizards %>% map(is.na)
+
+
 messy_lizards_with_na = messy_lizards %>% 
   mutate(na_row = 
            map(messy_lizards, is.na) %>% 
@@ -356,9 +359,11 @@ drift_one = function(allele_freq, generation, N) {
   new_allele_freq # return this
 }
 
+drift_one(.5, generation = 1, N = 20)
+
 # Simulate 100 generations of drift 
-accumulate(1:50, # This is passed to generation
-           drift_one, N = 100, # As with map(), this is a fixed parameter
+accumulate(.x = 1:50, # This is passed to generation
+           .f = drift_one, N = 100, # As with map(), this is a fixed parameter
            .init = .1) #initial allele freq
 
 # This would be easier as a function
@@ -367,7 +372,7 @@ genetic_drift = function(initial_freq, N, generations = 50) {
            drift_one, N = N, # As with map(), this is a fixed parameter
            .init = initial_freq) #initial allele freq
 }
-genetic_drift(.1, 100, 100)
+genetic_drift(.1, N = 100, generations = 100)
 
 # Note that in many cases, most of the final generations are at 0; 
   # there's no real reason to run this the allele fixes
