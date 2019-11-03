@@ -26,8 +26,12 @@ fig_2
 plot_grid(fig_1, fig_2, ncol = 2)
 
 plot_grid(fig_1, fig_2, nrow = 2)
-# Note in this case that the axes aren't aligned
 
+# Alternate method, if you have a list of ggplots:
+fig_list = list(fig_1, fig_2)
+plot_grid(plotlist = fig_list, ncol = 2) # note that the plotlist argument must be named
+
+# Note in this case that the axes aren't aligned
 plot_grid(fig_1, fig_2, nrow = 2, align = "v", # v(ertical), h(orizontal), or both (vh)
           axis = "lr") # l(eft), r(ight), t(op), b(ottom)
 
@@ -233,3 +237,127 @@ prop_plots = color_data %>%
     
 
 anole_map + prop_plots
+
+# Show quick example with scale fixing...
+
+
+### Reviewer 3 wants axis ticks under your facets ####
+
+# Let's say you have a manuscript in review with the following figure:
+original_plot = ggplot(lizards) + 
+  aes(x = Height, y = Diameter) + 
+  geom_point() + 
+  geom_smooth(method = "lm", se = FALSE) +
+  facet_grid(Color_morph ~ Perch_type, scales = "free")
+original_plot
+
+# Reviewer 3 wants you to add x axis ticks under each subplot and is unwilling to negotiate.
+# Since ggplot doesn't do naturally do this, how could you proceede?  
+
+# As a first step, we can make each row separately and combine them with plot_grid
+
+# Let's make a function for it, first
+make_plot = function(data) {
+  ggplot(data) + 
+    aes(x = Height, y = Diameter) + 
+    geom_point() + 
+    geom_smooth(method = "lm", se = FALSE) +
+    facet_grid(Color_morph ~ Perch_type, scales = "free")
+}
+
+# Split the lizard data frame into a lby color group
+lizards_by_color = lizards %>% 
+  group_by(Color_morph) %>% 
+  group_split()
+lizards_by_color
+
+lizards_by_color %>% map(make_plot) %>% 
+  plot_grid(plotlist = ., # Note that the "." means to take the pipe's input and put it ther
+            align = "v", axis = "tb", nrow =3)
+
+# So this is a mess; there are lots of unnecessary repeated elements that take up 
+  # way too much space; also, the vertical axes don't have the same scales
+
+# let's start by fixing the visual cruft
+
+reduced_x_axis = theme(axis.text.x = element_blank(),
+                       axis.title.x = element_blank(), 
+                       )
+reduced_y_axis = theme(axis.title.y = element_blank())
+reduced_facet_labs = theme(strip.background.x = element_blank(),
+                            strip.text.x = element_blank(), 
+                           strip)
+# This function will return a combination of the above elements depending on the position in the graph
+reduce_cruft = function(position = c("top", "middle", "bottom")) {
+  position = match.arg(position)
+  # Return the appropriate theme combo depending on position
+  switch(position,
+         top = reduced_x_axis + reduced_y_axis,
+         middle = reduced_x_axis + reduced_facet_labs,
+         bottom = reduced_y_axis + reduced_facet_labs)
+}
+
+plot_parameters = tibble(data = lizards_by_color, 
+                         position = c("top", "middle", "bottom"),
+                         rel_heights = c(1.1, 1, 1.3)) 
+                      # rel_heights lets us make the top and bottom a bit wider,
+                      # to accomodate the extra text/strips
+
+# We're going to define a function that takes a table of plot parameters and
+  # a plotting function
+  # the parameters should have data, position, and rel_heights as columns
+  # We're using this formulation so that we can update the 
+    # plotting function without having to update the scaffolding around it
+pseudo_facet_x = function(plot_parameters, plot_function) {
+  plt_tbl = plot_parameters %>% 
+    mutate(plotlist = map2(data, position, plot_function)) %>% 
+    select(plotlist, rel_heights)
+  # This creates a data frame with the row's plot in one column
+  # and the relative height in the other
+  
+  plot_grid(plotlist = plt_tbl$plotlist,  
+              rel_heights = plt_tbl$rel_heights,
+              nrow = 3, align = "v", axis = "tb")
+}
+
+# This just recreates the previous plot
+plot_parameters %>% pseudo_facet_x(~make_plot(.x)) 
+# recall, ~ creates an anonymous function; 
+# ~ .x + .y  is equivalent to function(.x, .y) {.x + .y}
+
+
+plot_parameters %>% pseudo_facet_x(~make_plot(.x) + reduce_cruft(.y)) 
+
+# So this looks a lot better; unfortunately, the x axis ticks are still not ligned up
+  # We could try adding xlim() or scale_x_continuous()
+plot_parameters %>% 
+  pseudo_facet_x(~ make_plot(.x) + reduce_cruft(.y) +
+                   scale_x_continuous(limits = range(lizards$Height)))
+
+# Unfortunately, this requires each column to have the same scale
+  # To allow for varying scales, we can trick ggplot by including 
+  # invisible data points
+geom_blank() # This doesn't display anything, but 
+  # it's position is used when ggplot calculates scale ranges
+
+# Determine the min and max Height values for each perch type
+perch_type_limits = lizards %>% group_by(Perch_type) %>% 
+  summarize(min = min(Height), max = max(Height)) %>% 
+  ungroup %>% 
+  pivot_longer(c(min, max), names_to = "side", values_to = "Height")
+perch_type_limits
+
+make_plot_with_lims = function(data, position) {
+  base_plot = make_plot(data)
+# Create limits for this row that will fit easily within the y limits
+  plot_lims = perch_type_limits %>% 
+    mutate(Diameter = mean(data$Diameter, na.rm = TRUE))
+  base_plot + geom_blank(data = plot_lims) + reduce_cruft(position)
+}
+
+plot_parameters %>% pseudo_facet_x(make_plot_with_lims)
+
+
+# with a bit of work, you could genericize this process into a function
+  # that starts with lizards and ends with the plot, without relying on 
+  # any external data
