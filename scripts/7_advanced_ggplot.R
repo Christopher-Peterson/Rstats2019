@@ -1,12 +1,10 @@
 library(tidyverse)
 library(cowplot)
+theme_set(theme_cowplot())
 
 lizards = read_csv("data/anoles.csv")
 
-# Cowplot:
-  # Arranging things w/ cow plot
-    # Aligning axes and stuff
-
+## Arranging figures in a grid ####
 # Let's say you want to arrange some figures.
 
 fig_1 = lizards %>% 
@@ -24,7 +22,7 @@ fig_1
 fig_2
 
 # Let's say we wanted to arrange these for a manuscript
-# plot_grid can do this
+# plot_grid (from cowplot) can do this
 plot_grid(fig_1, fig_2, ncol = 2)
 
 plot_grid(fig_1, fig_2, nrow = 2)
@@ -41,7 +39,7 @@ plot_grid(fig_1, fig_2, ncol = 2, align = "h", axis = "tb",
           rel_widths = c(1, 1.5)) # Give the second column a bit more room
 # There's also rel_heights for rows
 
-# Let's add some labels to each pannel
+# Let's add some labels to each panel
 plot_grid(fig_1, fig_2, ncol = 2, align = "h", axis = "tb", rel_widths = c(1, 1.3),
           labels = c("A", "B"), 
           label_x = 0, label_y = 1, # x & y go from 0 (left/bottom) to 1 (top/right)
@@ -68,7 +66,7 @@ theme_set(theme_cowplot(font_size = 14)) # This is good for papers
 fig_2
 # Note that theme_set wont work on anything that's already been created by plot_grid()
 
-## Customizing the appearance of a plot
+## Customizing the appearance of a plot ####
 
 # adding extra labels:
 fig_2 + ylab("Snout-Vent Length") # also works with xlab
@@ -86,6 +84,7 @@ list(ylab("Snout-Vent Length"),
 fig_2 + ylim(50, 100) # ylim/xlim remove data that isn't in the range
 fig_2 + coord_cartesian(ylim = c(50, 100)) # coord_cartesian doesn't remove data
 
+#### theme customization ####
 # more custom options: theme()
 # You can control almost any part of a plot with theme()
 ?theme
@@ -103,7 +102,7 @@ fig_2 + theme(axis.line.x = element_blank(),
 
 # Facet elements
 fig_3 = lizards %>% 
-  ggplot(aes(x = Limb, y = Diameter)) + facet_grid(Color~., switch = "y") + geom_point()
+  ggplot(aes(x = Limb, y = Diameter)) + facet_grid(Color_morph~., switch = "y") + geom_point()
 fig_3
 fig_3 + theme(strip.background = element_blank(),
               strip.placement = "outside",
@@ -119,7 +118,7 @@ fig_2 + theme(legend.direction = "horizontal",
               legend.position = c(0, 1), # coords range from 0 to 1 inside the plot range
               legend.justification = c(0,.8)) # hjust and vjust
 
-# ggplot: scales
+# ggplot: scales ####
 fig_3 + aes(color = SVL, size = Height) + 
   scale_size_continuous() + 
   scale_color_viridis_c(guide = "none") # a way to remove specific parts of the legend
@@ -133,7 +132,7 @@ fig_3 + aes(color = SVL) +
 fig_3 + aes(color = SVL) + scale_color_gradient(low = "black", high = "pink")
 fig_3 + aes(color = SVL) + scale_color_distiller(palette = 4)
 
-# X and y scales
+# X and y scales ####
 fig_2
 fig_2 + scale_y_continuous(breaks = seq(40, 85, by = 5), position = "right")
 
@@ -151,13 +150,15 @@ fig_2 + scale_y_continuous(breaks = seq(40, 85, by = 5),
                            labels = thin_axis_label(10))
 fig_2 + scale_y_continuous(breaks = seq(40, 85, by = 5), 
                            labels = thin_axis_label(20))
-# Adding images
-# Adding sub-plots
-
-# Adding subplots
+# Adding subplots ####
 
 grand_cayman_map = read_rds("data/cayman_map.rds")
-lizard_sites = read_csv('data/anole_sites.csv')
+library(readxl)
+lizard_sites = read_excel('data/anoles_messy.xlsx', sheet = "site_data") %>% 
+  select(Site, Latitude, Longitude)
+
+# Let's say we wanted to add a pie chart showing different color combinations
+  # at each point on the map
 
 anole_map = 
   ggplot(grand_cayman_map, aes(x,y)) +
@@ -170,52 +171,65 @@ anole_map
 
 # Here's the sites
 anole_map + 
-  geom_point(aes(x = Longitude, 
-                 y = Latitude), 
+  geom_text(aes(x = Longitude, 
+                 y = Latitude, label = Site), color = "red",
              data = lizard_sites)
 # What if we want to show the proportion of colors at each site?
 lizards
 
 
 # Let's do it for one site
-make_proportion_plot = function(.data) {
-  ggplot(.data, aes(x=1,fill = Color)) +
+make_proportion_plot = function(.data, 
+                                fill_scale = scale_fill_viridis_d()) {
+  ggplot(.data, aes(x=1,fill = Color_morph)) +
     geom_bar() + theme_nothing()+
-    scale_color_manual(values = c("skyblue1", "chocolate", "green3")) +
+    fill_scale + 
+    # scale_color_manual(values = c("skyblue1", "chocolate", "green3")) +
     coord_polar("y", 0)
 }
 lizards %>% filter(Site == "A") %>% make_proportion_plot
 
 # Add it to the map
 
-geom_proportion = function(subplot, x, y, size, ...) {
-  xmin = x - size/2
-  xmax = x + size/2
-  ymin = y - size/2
-  ymax = y + size/2
+geom_proportion = function(subplot, Longitude, Latitude, 
+                           N, size_scale = .001, ...) {
+  # We want the size of the dot to vary with sample size
+  # size-scale converts from units of N to units of lat/long
+  size = log10(N) * size_scale
+  # Define the extend borders of the subplot
+  xmin = Longitude - size/2
+  xmax = Longitude + size/2
+  ymin = Latitude - size/2
+  ymax = Latitude + size/2
+  # create an annotation object that can be added to a ggplot
   annotation_custom(ggplotGrob(subplot),
                               xmin, xmax, ymin, ymax)
 }
-plot_A = lizards %>% filter(Site == "A") %>% make_proportion_block
+plot_A = lizards %>% filter(Site == "A") %>% make_proportion_plot
 
 x_a = lizard_sites$Longitude[1]
 y_a = lizard_sites$Latitude[1]
 
-anole_map + geom_proportion(plot_A, x_a, y_a, size = .02)
+anole_map + geom_proportion(plot_A, x_a, y_a, 
+                    N = sum(lizards$Site == "A"), size_scale = .002)
 
 # Now let's add all of them
+# we're going to use pmap on geom_proportions, so we need columns:
+  # Longitude, Latitude, subplot, and N (subscale will be a constant)
 color_data = lizards %>% 
-  select(Site, Color) %>% 
-  group_by(Site) %>% 
-  nest(.key = .color) %>% 
-  left_join(
-    lizard_sites %>% select(Site, x = Longitude, y = Latitude), by = "Site")
+  select(Site, Color_morph) %>% 
+  group_by(Site) %>%
+  mutate(N = n()) %>% # this is per-site, due to group_by()
+  # nest to one row per Site
+  nest(.color = Color_morph) %>% 
+  # Join this with site locations
+  left_join(lizard_sites, by = "Site")
 color_data
 
-prop_plots = 
-  color_data %>% 
+prop_plots = color_data %>%
+  # Create the subplot as an extra column
   mutate(subplot = map(.color, make_proportion_plot)) %>% #create the plot
-  pmap(geom_proportion, size = 0.02)
+  pmap(geom_proportion, size_scale = 0.0025)
     
 
 anole_map + prop_plots
