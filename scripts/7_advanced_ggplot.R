@@ -184,15 +184,15 @@ lizards
 
 # Let's do it for one site
 make_proportion_plot = function(.data, 
-                                fill_scale = scale_fill_viridis_d()) {
+                                .extra = list()) {
   ggplot(.data, aes(x=1,fill = Color_morph)) +
-    geom_bar() + theme_nothing()+
-    fill_scale + 
+    geom_bar() + theme_nothing() + 
     # scale_color_manual(values = c("skyblue1", "chocolate", "green3")) +
-    coord_polar("y", 0)
+    coord_polar("y", 0) +
+    .extra # lets us flexibly add extra elements to the plot
 }
-lizards %>% filter(Site == "A") %>% make_proportion_plot
-
+plot_A = lizards %>% filter(Site == "A") %>% make_proportion_plot
+plot_A
 # Add it to the map
 
 geom_proportion = function(subplot, Longitude, Latitude, 
@@ -209,7 +209,6 @@ geom_proportion = function(subplot, Longitude, Latitude,
   annotation_custom(ggplotGrob(subplot),
                               xmin, xmax, ymin, ymax)
 }
-plot_A = lizards %>% filter(Site == "A") %>% make_proportion_plot
 
 x_a = lizard_sites$Longitude[1]
 y_a = lizard_sites$Latitude[1]
@@ -232,13 +231,73 @@ color_data
 
 prop_plots = color_data %>%
   # Create the subplot as an extra column
-  mutate(subplot = map(.color, make_proportion_plot)) %>% #create the plot
+  mutate(subplot = map(.color, make_proportion_plot, #create the plot
+                       .extra = scale_fill_viridis_d())) %>% # define a better color scale as an extra object
   pmap(geom_proportion, size_scale = 0.0025)
     
 
 anole_map + prop_plots
 
-# Show quick example with scale fixing...
+
+# Let's try this with a dataset that doesn't have all colors at all sites
+lizards_reduced = read_csv("data/anoles_reduced.csv")
+
+lizards_reduced %>% distinct(Site, Color_morph) %>% View
+
+
+color_data_reduced = 
+  lizards_reduced %>% 
+  select(Site, Color_morph) %>% 
+  group_by(Site) %>%
+  mutate(N = n()) %>% # this is per-site, due to group_by()
+  # nest to one row per Site
+  nest(.color = Color_morph) %>% 
+  # Join this with site locations
+  left_join(lizard_sites, by = "Site")
+prop_plots_reduced = color_data_reduced %>%
+  # Create the subplot as an extra column
+  mutate(subplot = map(.color, make_proportion_plot,
+                       .extra = scale_fill_viridis_d())) %>% #create the plot
+  pmap(geom_proportion, size_scale = 0.008)
+
+anole_map + prop_plots_reduced
+
+# From this plot, All of the single-morph sites have the same color, 
+  # even though it's not the same color morph
+  # This is because the automatic scales don't know there's more data there
+
+# How to fix this: 
+geom_blank() # adds nothing to the plot, but records scaling information
+  # This lets you make sure that certain values are included in the scale, 
+  # even if they don't appear in the plot
+
+# How it works:
+fixed_color_morphs = 
+  lizards %>% distinct(Color_morph) %>% 
+  mutate(x = 1)
+fixed_color_morphs # This matches the defined
+    # aesthetics in the make_proportion_plot function
+scale_fixer = geom_blank(data = fixed_color_morphs) # add this to each subplot
+
+prop_plots_reduced2 = color_data_reduced %>%
+  # Create the subplot as an extra column
+  mutate(subplot = map(.color, make_proportion_plot,
+                       .extra = list( # list of extra objects
+                         scale_fill_viridis_d(),
+                         scale_fixer))) %>% 
+  pmap(geom_proportion, size_scale = 0.01)
+
+morph_plot = anole_map + prop_plots_reduced2
+morph_plot
+
+# Let's add the legend in general to this:
+the_legend = get_legend( # from cowplot, extracts the legend from a plot
+  make_proportion_plot(lizards_reduced) + 
+    theme(legend.position = "top") + 
+    scale_fill_viridis_d(name = "Color Morph")
+)
+plot_grid(morph_plot, the_legend,
+          nrow = 2, rel_heights = c(10, 1))
 
 
 ### Reviewer 3 wants axis ticks under your facets ####
@@ -335,10 +394,8 @@ plot_parameters %>%
                    scale_x_continuous(limits = range(lizards$Height)))
 
 # Unfortunately, this requires each column to have the same scale
-  # To allow for varying scales, we can trick ggplot by including 
-  # invisible data points
-geom_blank() # This doesn't display anything, but 
-  # it's position is used when ggplot calculates scale ranges
+  # To address this, we can once again use geom_blank(),
+  # this time with faceting variables included
 
 # Determine the min and max Height values for each perch type
 perch_type_limits = lizards %>% group_by(Perch_type) %>% 
