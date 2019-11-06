@@ -88,7 +88,7 @@ list(ylab("Snout-Vent Length"),
 fig_2 + ylim(50, 100) # ylim/xlim remove data that isn't in the range
 fig_2 + coord_cartesian(ylim = c(50, 100)) # coord_cartesian doesn't remove data
 
-#### theme customization ####
+## theme customization ####
 # more custom options: theme()
 # You can control almost any part of a plot with theme()
 ?theme
@@ -106,7 +106,8 @@ fig_2 + theme(axis.line.x = element_blank(),
 
 # Facet elements
 fig_3 = lizards %>% 
-  ggplot(aes(x = Limb, y = Diameter)) + facet_grid(Color_morph~., switch = "y") + geom_point()
+  ggplot(aes(x = Limb, y = Diameter)) + 
+  facet_grid(.~Color_morph, switch = "y") + geom_point()
 fig_3
 fig_3 + theme(strip.background = element_blank(),
               strip.placement = "outside",
@@ -122,7 +123,7 @@ fig_2 + theme(legend.direction = "horizontal",
               legend.position = c(0, 1), # coords range from 0 to 1 inside the plot range
               legend.justification = c(0,.8)) # hjust and vjust
 
-# ggplot: scales ####
+## ggplot: scales ####
 fig_3 + aes(color = SVL, size = Height) + 
   scale_size_continuous() + 
   scale_color_viridis_c(guide = "none") # a way to remove specific parts of the legend
@@ -132,11 +133,37 @@ fig_3 + aes(color = SVL) +
 fig_3 + aes(color = SVL) + 
   scale_color_viridis_c(option = "magma") # Reverse direction of colors
 
+fig_3 + aes(color = SVL) + 
+  scale_color_viridis_c(
+    name = "Snout-Vent\nLength (cm)", # change scale title
+    option = "magma") # Reverse direction of colors
+
+# Discrete scale example
+fig_3 + aes(color = Perch_type) +
+  scale_color_viridis_d(name = "Perch Type")
+
+# If your discrete categories aren't named well, you can change them too
+fig_3 + aes(color = Perch_type) +
+  scale_color_viridis_d(name = "Where's the lizard?", 
+                        label = c("On a building",
+                                  "Somewhere else",
+                                  "On a shrub",
+                                  "On a tree"))
+
+# For viridis scales, you can reduce the color range a bit
+fig_3 + aes(color = Perch_type) +
+  scale_color_viridis_d(name = "Perch Type", 
+                        end = .9) # don't go all the way to yellow 
+fig_3 + aes(color = Perch_type) +
+  scale_color_viridis_d(name = "Perch Type", 
+                        begin = .3) # don't go all the way to purple 
+
+
 # There are a number of available color scales
 fig_3 + aes(color = SVL) + scale_color_gradient(low = "black", high = "pink")
 fig_3 + aes(color = SVL) + scale_color_distiller(palette = 4)
 
-# X and y scales ####
+## X and y scales ####
 fig_2
 fig_2 + scale_y_continuous(breaks = seq(40, 85, by = 5), position = "right")
 
@@ -154,7 +181,7 @@ fig_2 + scale_y_continuous(breaks = seq(40, 85, by = 5),
                            labels = thin_axis_label(10))
 fig_2 + scale_y_continuous(breaks = seq(40, 85, by = 5), 
                            labels = thin_axis_label(20))
-# Adding subplots ####
+## Adding subplots ####
 
 grand_cayman_map = read_rds("data/cayman_map.rds")
 library(readxl)
@@ -300,7 +327,7 @@ plot_grid(morph_plot, the_legend,
           nrow = 2, rel_heights = c(10, 1))
 
 
-### Reviewer 3 wants axis ticks under your facets ####
+## Reviewer 3 wants axis ticks under your facets ####
 
 # Let's say you have a manuscript in review with the following figure:
 original_plot = ggplot(lizards) + 
