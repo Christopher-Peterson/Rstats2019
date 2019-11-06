@@ -48,11 +48,12 @@ plot_grid(fig_1, fig_2, ncol = 2, align = "h", axis = "tb", rel_widths = c(1, 1.
           labels = c("A", "B"), 
           label_x = 0, label_y = 1, # x & y go from 0 (left/bottom) to 1 (top/right)
           hjust = -0.5, vjust = 1.5) 
+
 # hjust and vjust affect the horizontal and vertical justification
 # 0 is right/top justified, 1 is left/bottom justified, and numbers outside that range go further in that direction
 # Thus, hjust = -0.5, vjust = 1.5 brings the labels slightly below and to the right of their x and y positions
 
-# Let's go with horizontal arragement 
+# Let's go with vertical arrangement
 plot_grid(fig_1, fig_2, ncol = 1, align = "v", axis = "lr", rel_heights = c(1,1),
           labels = c("A", "B")) 
 # The legend isn't really working with these
@@ -63,14 +64,54 @@ no_legend = plot_grid(fig_1, fig_2 + theme(legend.position = "none"),
 no_legend
 plot_grid(no_legend, legend_2, ncol = 2, rel_widths = c(1, .1))
 
-  # seting the font scale
+
+fig_3 = lizards %>% 
+  ggplot(aes(x = Limb, y = Diameter)) + 
+  facet_grid(.~Color_morph, switch = "y") + geom_point()
+fig_3_no_legend = fig_3 + 
+  aes(color = Site) + scale_color_viridis_d(guide = "none")
+fig_3_no_legend
+
+# What if we want to aling this with the other two figures?
+
+top_row = plot_grid(fig_1, fig_2 + theme(legend.position = "none"), 
+                    ncol = 2, align = "h", axis = "tb", rel_widths = c(1, 1.3))
+
+plot_grid(top_row, fig_3_no_legend, 
+          nrow = 2)
+# Though it's close, these aren't actually aligned. 
+
+plot_grid(top_row, fig_3_no_legend, nrow = 2, align = "v", axis = "lr")
+# This is even worse.
+
+# To align these, we need to manually align them.
+
+# First, align the left plot of the top row with the bottom (along the left)
+left_aligned = align_plots(fig_1, fig_3_no_legend, 
+                           align = "v", axis = "l") # note that axis is only 
+
+# Re-recreate the top row with the newly aligned plot
+
+top_row2 = plot_grid(left_aligned[[1]], 
+                     fig_2 + theme(legend.position = "none"), 
+                     ncol = 2, align = "h", axis = "tb", 
+                     labels = c("A", "B"),
+                     rel_widths = c(1, 1.3))
+
+plot_grid(top_row2, left_aligned[[2]], 
+          nrow = 2, labels = c("", "C"))
+# For more details, see https://wilkelab.org/cowplot/articles/plot_grid.html
+
+## Customizing the appearance of a plot ####
+
+
+# seting the font scale
 theme_set(theme_cowplot(font_size = 20, line_size = 1)) # This is good for presentations
 fig_2
 theme_set(theme_cowplot(font_size = 14)) # This is good for papers
 fig_2
 # Note that theme_set wont work on anything that's already been created by plot_grid()
 
-## Customizing the appearance of a plot ####
 
 # adding extra labels:
 fig_2 + ylab("Snout-Vent Length") # also works with xlab
@@ -105,9 +146,6 @@ fig_2 + theme(axis.line.x = element_blank(),
 # element_blank() is used to remove something from a theme
 
 # Facet elements
-fig_3 = lizards %>% 
-  ggplot(aes(x = Limb, y = Diameter)) + 
-  facet_grid(.~Color_morph, switch = "y") + geom_point()
 fig_3
 fig_3 + theme(strip.background = element_blank(),
               strip.placement = "outside",
