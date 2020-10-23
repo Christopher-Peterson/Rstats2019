@@ -14,7 +14,7 @@ fig_1 = lizards %>%
   scale_color_viridis_d(guide = "none")
 fig_2 = lizards %>% 
   ggplot() + 
-  aes(x = Site, y = SVL, fill = Site)+
+  aes(x = Site, y = SVL, fill = Site) +
   geom_boxplot() +
   scale_fill_viridis_d()
 
@@ -32,7 +32,8 @@ fig_list = list(fig_1, fig_2)
 plot_grid(plotlist = fig_list, ncol = 2) # note that the plotlist argument must be named
 
 # Note in this case that the axes aren't aligned
-plot_grid(fig_1, fig_2, nrow = 2, align = "v", # v(ertical), h(orizontal), or both (vh)
+plot_grid(fig_1, fig_2, nrow = 2, 
+          align = "v", # v(ertical), h(orizontal), or both (vh)
           axis = "lr") # l(eft), r(ight), t(op), b(ottom)
 
 plot_grid(fig_1, fig_2, nrow = 2, align = "v", # align can be "v", "h", "vh", or "hv"
@@ -44,7 +45,8 @@ plot_grid(fig_1, fig_2, ncol = 2, align = "h", axis = "tb",
 # There's also rel_heights for rows
 
 # Let's add some labels to each panel
-plot_grid(fig_1, fig_2, ncol = 2, align = "h", axis = "tb", rel_widths = c(1, 1.3),
+plot_grid(fig_1, fig_2, ncol = 2, 
+          align = "h", axis = "tb", rel_widths = c(1, 1.3),
           labels = c("A", "B"), 
           label_x = 0, label_y = 1, # x & y go from 0 (left/bottom) to 1 (top/right)
           hjust = -0.5, vjust = 1.5) 
@@ -58,7 +60,8 @@ plot_grid(fig_1, fig_2, ncol = 1, align = "v", axis = "lr", rel_heights = c(1,1)
           labels = c("A", "B")) 
 # The legend isn't really working with these
 legend_2 = get_legend(fig_2)
-no_legend = plot_grid(fig_1, fig_2 + theme(legend.position = "none"),
+no_legend = plot_grid(fig_1, 
+                     fig_2 + theme(legend.position = "none"),
           ncol = 1, align = "v", axis = "lr", rel_heights = c(1,1),
           labels = c("A", "B")) 
 no_legend
@@ -104,9 +107,11 @@ plot_grid(top_row2, left_aligned[[2]],
 
 ## Customizing the appearance of a plot ####
 
-
 # seting the font scale
-theme_set(theme_cowplot(font_size = 20, line_size = 1)) # This is good for presentations
+theme_set(
+  theme_cowplot(font_size = 20, line_size = 1)) 
+# This is good for presentations
+
 fig_2
 theme_set(theme_cowplot(font_size = 14)) # This is good for papers
 fig_2
@@ -116,7 +121,8 @@ fig_2
 # adding extra labels:
 fig_2 + ylab("Snout-Vent Length") # also works with xlab
 fig_2 + ggtitle(label = "SVL by Site", subtitle = "We don't usually use these")
-fig_2 + annotate("text", x = 10, y = 84.5, label = "This is an  outlier", hjust = 1.05 )
+fig_2 + annotate("text", x = 10, y = 84.5, 
+                 label = "This is an  outlier", hjust = 1.05 )
 
 # Fun fact: you can add ggplot elements from a list
 fig_2 +
@@ -153,7 +159,8 @@ fig_3 + theme(strip.background = element_blank(),
 
 # legend elements
 fig_2 + theme(legend.position = "top", 
-              legend.background = element_rect(fill = "grey", # bg color
+              legend.background = 
+                element_rect(fill = "grey", # bg color
                        color = "black",  linetype = 1, size = .5), # line details
               legend.title = element_text(size = 20)) 
 # Placing the legend inside the plot
@@ -203,7 +210,8 @@ fig_3 + aes(color = SVL) + scale_color_distiller(palette = 4)
 
 ## X and y scales ####
 fig_2
-fig_2 + scale_y_continuous(breaks = seq(40, 85, by = 5), position = "right")
+fig_2 + 
+  scale_y_continuous(breaks = seq(40, 85, by = 5), position = "right")
 
 labeled_breaks = c(40, "", 50, "", 60, "", 70, "", 80, "")
 
@@ -213,7 +221,8 @@ fig_2 + scale_y_continuous(breaks = seq(40, 85, by = 5),
 # If we wanted to automate this, we could write a function
 thin_axis_label = function(thin_by = 10) { 
   # Only shows labels when the break is amultiple of thin_by
-  function(breaks) if_else((breaks %% thin_by) == 0, as.character(breaks), "")
+  function(breaks) if_else((breaks %% thin_by) == 0, 
+                           as.character(breaks), "")
 }
 fig_2 + scale_y_continuous(breaks = seq(40, 85, by = 5), 
                            labels = thin_axis_label(10))
@@ -256,6 +265,7 @@ make_proportion_plot = function(.data,
     coord_polar("y", 0) +
     .extra # lets us flexibly add extra elements to the plot
 }
+
 plot_A = lizards %>% filter(Site == "A") %>% make_proportion_plot
 plot_A
 # Add it to the map
@@ -279,7 +289,7 @@ x_a = lizard_sites$Longitude[1]
 y_a = lizard_sites$Latitude[1]
 
 anole_map + geom_proportion(plot_A, x_a, y_a, 
-                    N = sum(lizards$Site == "A"), size_scale = .002)
+                    N = sum(lizards$Site == "A"), size_scale = .009)
 
 # Now let's add all of them
 # we're going to use pmap on geom_proportions, so we need columns:
@@ -298,7 +308,7 @@ prop_plots = color_data %>%
   # Create the subplot as an extra column
   mutate(subplot = map(.color, make_proportion_plot, #create the plot
                        .extra = scale_fill_viridis_d())) %>% # define a better color scale as an extra object
-  pmap(geom_proportion, size_scale = 0.0025)
+  pmap(geom_proportion, size_scale = 0.009)
     
 
 anole_map + prop_plots
