@@ -63,7 +63,7 @@ base_plot + aes(color = Limb, shape = Color_morph) +
 #### Geoms ####
 # Geoms are different ways to visualize data
 
-## Discrete X ##
+## Discrete X, no Y ####
 # Histograms
 ggplot(data = lizards) + 
   aes(x = Diameter) + 
@@ -94,7 +94,7 @@ ggplot(data = lizards) +
     binwidth = 2.5)
 
 
-# Discrete X, continuous Y
+# Discrete X, continuous Y ####
 
 # boxplots
 box_plots <- ggplot(data = lizards) + 
@@ -114,17 +114,59 @@ ggplot(data = lizards) +
   aes(x = Site, y = Height) + 
   geom_jitter(width = .25, height = 0)
 
-# Continuous X and Y
+# A nice alternative to the jitterplot is provided by geom_sina() in the ggforce package
+  # It follows the shape of a voilin plot
 
-# Line graph
 ggplot(data = lizards) + 
+  aes(x = Site, y = Height) + 
+  geom_violin() +
+  geom_sina(color = "grey30", fill = "grey70",
+            shape = 21) # Note that shape 21 uses both color a fill as aesthetics
+
+# Adding means w/ error bars ####
+# We need a different data set for this:
+
+lizard_sumary = read_csv("data/anoles_smry2.csv")
+
+lizard_sumary # Contains the mean and standard error of Diameter for each color
+
+# Let's plot it with the full lizard data
+
+ggplot(lizards) + 
+  aes(x = Color_morph, y = Diameter) + 
+  # Show the raw data (from the lizards data frame)
+  geom_sina(color = "grey60") +
+  # Show the Mean +/- 95% confidence interval
+  geom_errorbar(
+    # 95% CI is the mean diamter +/- 1.96 * se
+    aes(ymin = Diameter - 1.96 * Diameter_se, 
+        ymax = Diameter + 1.96 * Diameter_se),
+    color = "black", 
+    width = .3, # How wide the error bars are
+    data = diameter_mean_se # Use the summary data frame instead of lizards
+    # The column names should match with the global aesthetics (in this case, x and y)
+  ) + 
+  geom_point(color = "black", size = 2,
+             data = diameter_mean_se
+             # This one also uses the summary data frame
+             # It keeps the global aesthetics, which match
+             # the color morph & mean value
+  )
+
+
+# Continuous X and Y ####
+
+# Heatmap:
+  # This is sort of a 2-d histogram, where the data is divided into 
+  # bins along both the x and y axis; the fill indicates
+  # how many data points fall into that region. 
+  # This is helpful if you have a lot of points that are 
+  # all overlapping in the same area.
+
+ggplot(lizards) + 
   aes(x = SVL, y = Tail) + 
-  geom_line()
-ggplot(data = lizards) + 
-  aes(x = SVL, y = Tail, color = Color_morph) + 
-  geom_line()
-# SO these are clearly not a good way to visualize this sort of data...
-
+  geom_bin2d(bins = 25) + 
+  scale_fill_viridis_c()
 
 # Regression line, with errors
 ggplot(data = lizards) + 
@@ -135,14 +177,27 @@ ggplot(data = lizards) +
   aes(x = SVL, y = Tail, color = Color_morph) + 
   geom_smooth(method = "lm", se = TRUE) # use se = FALSE to disable error regions
 
-# Combining geoms
 regression_plot <- ggplot(data = lizards) + 
   aes(x = SVL, y = Tail) + 
   geom_point(size = 2.5, shape = 1, alpha = .5) + 
   geom_smooth(method = "lm") # adds regression line
 regression_plot 
 
-# Bar graphs involve a statistical transformation of the data
+# Time series data ####
+
+# We need new data for this
+beavers = read_csv("data/beavers.csv")
+# This shows body temperature & and beaver activity level for two beavers over time
+
+ggplot(beavers) + 
+  aes(x = Time, y = Temperature, color = beaver) + 
+  geom_line() + 
+  scale_x_datetime(date_labels = "%H:%M") # This tells R that you've got a time on the x axis
+# date_labels says to use hours:minutes as the axis format
+
+
+
+# Bar graphs ####
 
 # How many individuals were at each site?
 ggplot(data = lizards) + 

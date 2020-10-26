@@ -138,17 +138,45 @@ lizards %>% select(Site, Color_morph, SVL) # keeps the columns Site, Color_morph
 # Three ways to select variables:
 # By name (which we just did)
 
-# From a character vector
-keep_cols = c("Site", "Color_morph", "SVL")
-lizards %>% select(keep_cols)
-
 # By position
 lizards %>% select( 1, 2, 7) 
 lizards %>% select(1:4) # this is more useful for ranges of values
 
+# From a character vector
+keep_cols = c("Site", "Color_morph", "SVL")
+lizards %>% select(keep_cols)
+
+# Note that if you want to use a variable that has column names saved
+# as a character vector, you'll need to use a helper function 
+# all_of() to tell select() that you want to look for the contents 
+# of the variable, not the name of the variable:
+
+select_vars = c("Site", "Color_morph", "SVL")
+lizards %>% 
+  select(all_of(select_vars)) %>% # without all_of, it would try to look for a column called "select_vars"
+  View()
+
 # Use negative signs to REMOVE columns
 lizards %>% select(-Color_morph, -Limb)
 lizards %>% select(-(1:5))
+
+# Selecting by column properties:
+# You can use the where() helper function to select columns
+# based on their characteristics.  
+# For example, the is.numeric() function returns TRUE
+# if its argument is a number; you can use it to select all
+# numeric columns.
+
+lizards %>% 
+  select(where(is.numeric))
+# Returns only numeric columns
+
+# You could do the same for text or logical vectors with
+  # `is.character` or `is.logical`, respectively.
+
+# There's a lot more you can do with this if you want to get fancy;
+# the documentation is available at 
+?tidyselect::language
 
 #### arrange(): Sorts your columns ####
 
@@ -183,14 +211,31 @@ lizards %>% summarize(prop_tree = mean(Perch_type == "Tree"),
                       prop_building = mean(Perch_type == "Building"),
                       prop_other = 1 - (prop_tree + prop_shrub + prop_building))
 
-lizards %>% summarize_all(mean) # summarize_all applies the function to each variable.  
-# Note that we're getting NAs for some, because you can't take the mean of a category.  
 
-# That didn't make sense for Site, Color_morph, and Perch_type,
-  # so let's re-do that with only the numeric columns
-lizards %>% summarize_if(is.numeric, mean)
+## Summarize across multiple columns
+# You can use the across() helper to apply the same summary
+  # function to multiple rows.
 
-# There are similar functions like mutate_all, filter_if, etc.
+lizards %>% 
+  summarize(
+    across(.cols = c(SVL, Tail), # Summarize at SVL & Tail columns
+           .fns = mean) # With the mean function
+  ) %>% View()
+
+# The .cols argument works just like select(), 
+  # so it it takes the same helper functions
+# The .fns argument can take a named vector or list of functions, 
+  # and will apply all of them
+
+lizards %>% 
+  summarize(
+    across(.cols = where(is.numeric), # apply to all numeric functions
+           .fns = c(Mean = mean, StDev = sd)) # named vector (Mean and StDev)
+  ) # Note the names of the resulting table
+
+# This applies the functions `mean()` and `sd()` to all numeric columns; 
+# The results have the names `"Mean"` and `"StDev"`
+#  that we gave each function applied to the end of the column.
  
 #### group_by(): apply functions separately to each group ####
 
