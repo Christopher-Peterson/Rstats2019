@@ -12,15 +12,62 @@ install.packages("tidyverse") # It may be Cmd+Enter for Mac users
 # If you're asked to pick a server/mirror, go with the first option
 # (O-cloud)
 install.packages("cowplot") # Install this package too
-
+install.packages("ggforce") # Also this one
 # If you already have these installed, make sure they're the 
 # latest versions.  If not, then please run the above code to
 # update them
 
+# The library() function loads a package into the memory; 
+# you need to do this each time you start an R session
 library(tidyverse)
-library(cowplot)
 
-#### let's take a look at some data ####
+#### Some R Basics
+
+# First, R can be used as a fancy calculator
+  # To run these lines, move the cursor to them and
+  # hit Ctrl + Enter (Cmd + Enter on a Mac)
+
+(4^2 + 8)/10
+log(5) + 12 # R has a bunch of built-in funcitons, like log,
+sqrt(abs(-20)) # sqrt() [Square root], and abs() [absolute value]
+
+# R works naturally with vectors of numbers (or text).
+
+1:10 # Create a sequence of numbers
+c(1, 4, 9, 12, 98.7) # use c() to make a vector
+c("A", "B", "C", "D") # Here's a character vector
+
+#  Most operations work with vectors
+(1:10) + 2
+(1:5) + c(10, 20, 30, 40, 50)
+
+# Vectors can only be of one type; 
+  # mixing numbers & text will convert them all to text
+c("I have been at UT for ", 5, "Years")
+
+# You can save values & objects by creating variables.
+
+# You can use either <- or = to assign a variable
+first_ten <- 1:10
+second_ten = 11:20 
+
+# Run the variable's name to see it's value (this is callled printing)
+first_ten
+second_ten
+
+# You can use variables just like you would use their values
+first_ten + 1 
+first_ten + second_ten
+
+# Note that variable names are case-sensitive
+first_Ten # doesn't work
+
+#### Reading data into R ####
+
+# You can read csv files into R with read_csv(), from the readr package
+  # readr is part of the tidyverse package
+  # Note that there's also a read.csv() function; 
+    # It can do some weird & unexpected stuff, so I recommed avoiding it
 
 lizards <- read_csv("data/anoles.csv") # This loads in the dataset
 
@@ -29,182 +76,45 @@ lizards # This is a tidy data frame;
 glimpse(lizards)
 View(lizards)
 
-## Data visualization
+# Each column of the data frame is a vector of the same length.
+# We can pull our columns and work with them directly:
 
-base_plot <- 
-  ggplot(data = lizards) + # sets up a plot around lizards
-  aes(x = SVL, y = Tail) + # Connects columns of lizards to plot aesthetics
-  geom_point() # defines a visual layer; in this case, points
-base_plot # show results
+# Let's extract the color column
+lizards$Color_morph
+lizards[["Color_morph"]] 
+pull(lizards, Color_morph) # requires dplyr package, which is in the tidyverse
+# Note that some of these require quotes, some of them don't
 
-# This is functional, but doesn't look much like a scientific figure
-theme_set(theme_cowplot()) # changes the default theme 
-base_plot 
+#### Functions ####
 
-#### Aesthetics ####
-# Aesthetics connect a column of data to a visual representation on the plot
-# for example, x and y are aesthetics that correspond to axis positions
+# Pretty much everything that isn't data is a function.  
+  # Some of the examples we've used include `log`, `abs`, `read_csv`, and `mean`. 
+  # Most functions have arguments, which tell the function what to work with.  
+  # For example: 
 
-# Color_morph is another commonly used aesthetic
+mean(x = 1:5) # mean of 1 through 5
+sd(x = lizards$Mass) # standard deviation of lizard mass
 
-base_plot + aes(color = Color_morph) # discrete color
+# Functions can have multiple arguments; 
+  # for example `log` has the arguments `x` and `base`. 
+  # Arguments can be matched by name or by their position. 
+  # Some arguments have default values that are used if the 
+    # argument isn't provided.
+    # 
+log(x = 1:5) # argument is matched by name; base uses it's default value
+log(1:5, base = 10) # specifies a base; this overrides the default
+log(1:5, 10) # same as above, but matched by position
 
-base_plot + aes(color = Limb) # continuous color
+## Getting Help:
 
-# Scales change the way aesthetics look
-base_plot + aes(color = Limb) + scale_color_viridis_c()
-base_plot + aes(color = Color_morph) + scale_color_viridis_d()
+# R has a built-in help system to look up functions, 
+  # their arguments, and what they do:
 
-  # Shape
-base_plot + aes(shape = Color_morph)
-base_plot + aes(shape = Color_morph) + scale_shape(solid = FALSE)
+?read_csv
+?mean
+?log
 
-# Size
-ggplot(data = lizards, aes(x = SVL, y = Tail, size = Limb)) + 
-  geom_point(color = "cornflowerblue", shape = 1)
-# Note that aes() was included in the ggplot call instead of being 
-  # Added to it; both ways are valid
+# If you don't know the name of a function, you can search the 
+  # help system for key words like this:
+??read
 
-# You can also give points fixed aesthetic values
-ggplot(data = lizards) + 
-  aes(x = SVL, y = Tail, shape = Color_morph) + 
-  geom_point(size = 2.5, color = "cornflowerblue") + 
-  scale_shape(solid = FALSE)
-
-# Or double up on Aesthetics
-ggplot(data = lizards) + 
-  aes(x = SVL, y = Tail, shape = Color_morph, color = Color_morph) + 
-  geom_point(size = 2.5) + 
-  scale_shape(solid = FALSE)
-
-base_plot + aes(color = Limb, shape = Color_morph) + 
-  scale_shape(solid = FALSE) +
-  scale_color_viridis_c()
-  
-#### Geoms ####
-# Geoms are different ways to visualize data
-
-## Discrete X ##
-# Histograms
-ggplot(data = lizards) + 
-  aes(x = Diameter) + 
-  geom_histogram()
-# Note that there's a warning here; let's address it
-
-ggplot(data = lizards) + 
-  aes(x = Diameter) + 
-  geom_histogram(binwidth = 2.5, 
-     color = "black", fill = "white") # binwidths option fixes the warning
-
-# Density Plots
-ggplot(data = lizards) + 
-  aes(x = Diameter) + 
-  geom_density()
-
-# Exercise: How could you use a density plot or histogram to compare
-  # Diameter distribution of different lizard Color_morph morphs?
-
-ggplot(data = lizards) + 
-  aes(x = Diameter, color = Color_morph) + 
-  geom_density()
-
-ggplot(data = lizards) + 
-  aes(x = Diameter) + 
-  geom_histogram(
-    aes(fill = Color_morph), color = "black",
-    binwidth = 2.5)
-
-
-# Discrete X, continuous Y
-
-# boxplots
-box_plots <- ggplot(data = lizards) + 
-  aes(x = Site, y = Height) + 
-  geom_boxplot() 
-
-box_plots + aes(fill = Color_morph) # Note that we're using fill as the aesthetic, not color
-# Generally, fill is used to color solid objects, color is used for lines or points
-
-# Violin plot
-ggplot(data = lizards) + 
-  aes(x = Site, y = Height) + 
-  geom_violin()  
-
-# Jitter plot
-ggplot(data = lizards) + 
-  aes(x = Site, y = Height) + 
-  geom_jitter(width = .25, height = 0)
-
-# Continuous X and Y
-
-# Line graph
-ggplot(data = lizards) + 
-  aes(x = SVL, y = Tail) + 
-  geom_line()
-ggplot(data = lizards) + 
-  aes(x = SVL, y = Tail, color = Color_morph) + 
-  geom_line()
-# SO these are clearly not a good way to visualize this sort of data...
-
-
-# Regression line, with errors
-ggplot(data = lizards) + 
-  aes(x = SVL, y = Tail) + 
-  geom_smooth(method = "lm", se = TRUE) # use se = FALSE to disable error regions
-
-ggplot(data = lizards) + 
-  aes(x = SVL, y = Tail, color = Color_morph) + 
-  geom_smooth(method = "lm", se = TRUE) # use se = FALSE to disable error regions
-
-# Combining geoms
-regression_plot <- ggplot(data = lizards) + 
-  aes(x = SVL, y = Tail) + 
-  geom_point(size = 2.5, shape = 1, alpha = .5) + 
-  geom_smooth(method = "lm") # adds regression line
-regression_plot 
-
-# Bar graphs involve a statistical transformation of the data
-
-# How many individuals were at each site?
-ggplot(data = lizards) + 
-  aes(x = Site) +
-  geom_bar()
-
-ggplot(data = lizards) + 
-  aes(x = Site, fill = Perch_type) +
-  geom_bar()
-
-ggplot(data = lizards) + 
-  aes(x = Site, fill = Perch_type) +
-  geom_bar(position = "dodge")
-
-ggplot(data = lizards) + 
-  aes(x = Site, fill = Perch_type) +
-  geom_bar() + facet_wrap(~Color_morph)
-
-# re-ordering bar graphs
-  # You can use fct_infreq() on the x aesthetic to re-order it by frequency 
-bars_in_order = 
-  ggplot(data = lizards) + 
-  aes(x = fct_infreq(Site), 
-      fill = Perch_type) +
-  geom_bar()
-bars_in_order
-bars_in_order + xlab("Site")
-
-# Exercise: explore the lizards dataset to see if there are any 
-# apparent relationships between different variables
-
-#### Facets ####
-# Facets are a way to create several smaller plots out of one dataset
-
-regression_plot + facet_wrap(~Color_morph) # This splits the colors into separate plots
-
-regression_plot + facet_wrap(~Site) # Note that by default, the scales are fixed to be the same
-regression_plot + facet_wrap(~Site, scales = "free_x")
-
-# Two_way faceting
-regression_plot + facet_grid(Color_morph~Perch_type)
-
-# Cheat sheet
-# Go to https://ggplot2.tidyverse.org/ for the help files

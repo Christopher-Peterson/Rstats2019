@@ -1,13 +1,7 @@
 # Tidyr
 library(tidyverse)
 library(cowplot)
-# library(readxl)
 theme_set(theme_cowplot())
-
-?pivot_wider
-
-# If this doesn't pull up a help file, you need to re-install tidyr
-# install.packages("tidyr")
 
 ## New data set: ####
 succession_data = read_csv("data/wide_succession_data.csv")
